@@ -21,8 +21,8 @@ android {
         applicationId = "de.thermo.lueftung"
         minSdk = 26
         targetSdk = 35
-        versionCode = 26
-        versionName = "11.20"
+        versionCode = 27
+        versionName = "11.21"
     }
 }
 

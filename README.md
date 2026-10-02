@@ -1,4 +1,4 @@
-# Thermo Lüftung V11.20
+# Thermo Lüftung V11.21
 
 Weiterentwicklung des vorhandenen Android-Studio-Projekts aus
 `ThermoLueftungsApp_V11_19_Sechs_Wetter_Portrait_Richtig.zip`.
@@ -17,7 +17,7 @@ Weiterentwicklung des vorhandenen Android-Studio-Projekts aus
   taumelnder Schnee und dezente nächtliche Reflexionen/Sternschnuppe.
 - Die Animation zeichnet mit maximal 30 Bildern pro Sekunde innerhalb der Canvas, pausiert außerhalb des sichtbaren
   Bereichs sowie bei nicht aktiver App und verwendet höchstens 72 Regenpartikel
-  bzw. 48 Schneeflocken; auf Low-RAM-Geräten 32 Regenpartikel bzw. 28 Schneeflocken. Wetteranimationen lassen sich in den Einstellungen abschalten. Gewitterblitze folgen zufällig nach 18–42 Sekunden.
+  bzw. 48 Schneeflocken; auf Low-RAM-Geräten 32 Regenpartikel bzw. 28 Schneeflocken. Wetteranimationen lassen sich in den Einstellungen abschalten. Gewitterblitze folgen zufällig nach 6–14 Sekunden.
 - Die 13 Räume und die vorhandenen Stockwerkbilder sind erhalten. Die Raumliste lädt Einträge bedarfsgerecht über `LazyColumn`.
 - Eigene Raumbilder werden in Übersicht, Raumdetail und Einstellungen angezeigt.
   Dokumentzugriffe bleiben gespeichert; Bilder werden im Hintergrund verkleinert
@@ -76,3 +76,16 @@ Die Raumansicht enthält eine aw-Schätzung nach manueller Eingabe der gemessene
 ## Mobiler Entfeuchter
 
 Unter **Geräte** vergleicht die App die drei getrennten Kellerräume und empfiehlt bei erhöhtem Feuchtebedarf einen Einsatzort. Ohne Wandmessung wird allein die Luftfeuchte bewertet und kein aw erfunden. Die Analyse ist bis zur Sensoranbindung als Demo gekennzeichnet. Der aktuelle Standort des Midea lässt sich manuell wählen und wird gespeichert. Empfehlungen verschieben die Standortzuordnung nicht automatisch.
+
+## Änderungen V11.21
+
+- Deutlichere bewegte Wolkentexturen und Sonnenreflexionen bei festem Hintergrund.
+- Funkelnde Sterne und drei gelegentliche Sternschnuppen je Minute im klaren Nachthimmel.
+- Gewitterblitze etwa alle 6–14 Sekunden.
+- Licht nach Geräte-Uhrzeit: Nacht 21–6 Uhr, Dämmerung 6–9/18–21 Uhr, sonst Tag.
+  Regen/Gewitter tagsüber heller, Wetter nachts dunkler; klare Nächte verwenden
+  das Nachtbild. Dies ist eine Uhrzeit-Näherung, keine standortbezogene Berechnung
+  von Sonnenauf- und Sonnenuntergang.
+- Einstellungen zeigen eine vollständige, kompakte animierte Hochformat-Vorschau
+  vor den Temperaturzielen. Auto/Mittag/Abend/Nacht erlauben den Lichtvergleich.
+- Der Animationsschalter und die systemweite Bewegungsreduzierung bleiben wirksam.

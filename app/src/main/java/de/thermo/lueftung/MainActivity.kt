@@ -105,6 +105,7 @@ class ThermoViewModel : ViewModel() {
     var page by mutableIntStateOf(0)
     var selectedRoom by mutableStateOf<Room?>(null)
     var weather by mutableStateOf("Regen")
+    var sceneHourOverride by mutableStateOf<Int?>(null)
     var weatherAnimations by mutableStateOf(true)
     var dehumidifierRoomId by mutableStateOf<String?>(null)
     private var imageRevision by mutableIntStateOf(0)
@@ -285,7 +286,7 @@ fun HomeScreen(vm: ThermoViewModel) {
             Modifier.fillMaxWidth().aspectRatio(1080f / 1800f)
                 .clip(RoundedCornerShape(bottomStart=28.dp,bottomEnd=28.dp))
         ) {
-            AnimatedHouseScene(vm.weather, Modifier.fillMaxSize(), vm.weatherAnimations)
+            AnimatedHouseScene(vm.weather, Modifier.fillMaxSize(), vm.weatherAnimations, vm.sceneHourOverride)
             Row(
                 Modifier.fillMaxWidth().padding(horizontal=12.dp, vertical=16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -740,13 +741,6 @@ fun SettingsScreen(vm:ThermoViewModel) {
     }
     AppScaffold("Einstellungen","Temperatur · Lüftungslogik · Raumbilder",5,null,vm) {
         Spacer(Modifier.height(8.dp))
-        Text("Temperatur-Ziele",color=Color.White,fontWeight=FontWeight.Bold,modifier=Modifier.padding(horizontal=14.dp))
-        listOf("Komfort" to "22 °C","Eco" to "20 °C","Nacht" to "17 °C").forEach {
-            GlassCard(Modifier.fillMaxWidth().padding(horizontal=12.dp,vertical=5.dp),alpha=.68f) {
-                Row(verticalAlignment=Alignment.CenterVertically){Text(it.first,color=Color.White,fontWeight=FontWeight.Bold,modifier=Modifier.weight(1f));Text(it.second,color=Cyan,fontWeight=FontWeight.Bold)}
-            }
-        }
-        Spacer(Modifier.height(14.dp))
         GlassCard(Modifier.fillMaxWidth().padding(horizontal=12.dp,vertical=5.dp)) {
             Row(verticalAlignment=Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -761,6 +755,12 @@ fun SettingsScreen(vm:ThermoViewModel) {
             }
         }
         Spacer(Modifier.height(10.dp))
+        Row(Modifier.fillMaxWidth().padding(horizontal=12.dp).horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(5.dp)) {
+            listOf("Auto" to null,"Mittag" to 12,"Abend" to 19,"Nacht" to 23).forEach { (label,hour) ->
+                Pill(label,vm.sceneHourOverride==hour) { vm.sceneHourOverride=hour }
+            }
+        }
+        Text("Licht: Auto nach Geräte-Uhrzeit · sonst Testansicht",color=TextSoft,fontSize=10.sp,modifier=Modifier.padding(horizontal=14.dp))
         Text("Wetter-Szenen testen",color=Color.White,fontWeight=FontWeight.Bold,modifier=Modifier.padding(horizontal=14.dp))
         Text("Die Szene auf der Startseite reagiert sofort.",color=TextSoft,fontSize=10.sp,modifier=Modifier.padding(horizontal=14.dp))
         Spacer(Modifier.height(6.dp))
@@ -788,14 +788,21 @@ fun SettingsScreen(vm:ThermoViewModel) {
             Modifier.fillMaxWidth().padding(horizontal=12.dp,vertical=6.dp),
             alpha=.55f,padding=PaddingValues(0.dp)
         ) {
-            Box(Modifier.fillMaxWidth().aspectRatio(1080f / 1800f).clip(RoundedCornerShape(22.dp))) {
-                AnimatedHouseScene(vm.weather,Modifier.fillMaxSize(),vm.weatherAnimations)
+            Box(Modifier.width(132.dp).align(Alignment.CenterHorizontally).aspectRatio(3f / 5f).clip(RoundedCornerShape(14.dp))) {
+                AnimatedHouseScene(vm.weather,Modifier.fillMaxSize(),vm.weatherAnimations,vm.sceneHourOverride)
                 Text(
-                    "Vorschau: ${vm.weather}",color=Color.White,fontWeight=FontWeight.Bold,fontSize=12.sp,
+                    "Vorschau: ${vm.weather}",color=Color.White,fontWeight=FontWeight.Bold,fontSize=9.sp,lineHeight=12.sp,
                     modifier=Modifier.align(Alignment.BottomStart).padding(10.dp)
                         .background(Color.Black.copy(alpha=.45f),RoundedCornerShape(10.dp))
                         .padding(horizontal=9.dp,vertical=5.dp)
                 )
+            }
+        }
+        Spacer(Modifier.height(14.dp))
+        Text("Temperatur-Ziele",color=Color.White,fontWeight=FontWeight.Bold,modifier=Modifier.padding(horizontal=14.dp))
+        listOf("Komfort" to "22 °C","Eco" to "20 °C","Nacht" to "17 °C").forEach {
+            GlassCard(Modifier.fillMaxWidth().padding(horizontal=12.dp,vertical=5.dp),alpha=.68f) {
+                Row(verticalAlignment=Alignment.CenterVertically){Text(it.first,color=Color.White,fontWeight=FontWeight.Bold,modifier=Modifier.weight(1f));Text(it.second,color=Cyan,fontWeight=FontWeight.Bold)}
             }
         }
         Spacer(Modifier.height(14.dp))

@@ -15,6 +15,8 @@ import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import java.time.LocalTime
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
@@ -78,7 +80,12 @@ fun WeatherConditionIcon(condition: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AnimatedHouseScene(condition: String, modifier: Modifier = Modifier, animationsEnabled: Boolean = true) {
+fun AnimatedHouseScene(condition: String, modifier: Modifier = Modifier, animationsEnabled: Boolean = true, hourOverride: Int? = null) {
+    var hour by remember { mutableIntStateOf(LocalTime.now().hour) }
+    LaunchedEffect(Unit) { while (true) { delay(60000); hour=LocalTime.now().hour } }
+    val lighting=weatherLighting(condition,hourOverride ?: hour)
+    val night=lighting==WeatherLighting.NIGHT
+    val dusk=lighting==WeatherLighting.DUSK
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
     var visible by remember { mutableStateOf(true) }
     val view = LocalView.current
@@ -88,17 +95,23 @@ fun AnimatedHouseScene(condition: String, modifier: Modifier = Modifier, animati
             bounds.top < view.height && bounds.right > 0 && bounds.left < view.width
     }) {
         Image(
-            painterResource(weatherImage(condition)),
+            painterResource(weatherImage(if(night && condition=="Sonnig") "Nacht" else condition)),
             contentDescription = "Waldlichtung · $condition",
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize()
         )
-        if (animationsEnabled && lifecycle == Lifecycle.State.RESUMED && visible) WeatherOverlay(condition)
+        // Lighting is independent of animated effects and remains when motion is disabled.
+        Canvas(Modifier.fillMaxSize()) {
+            if (night && condition!="Nacht" && condition!="Sonnig") drawRect(Color(0xFF03152E).copy(alpha=.48f))
+            else if(dusk && condition!="Nacht") drawRect(Color(0xFFEFAC75).copy(alpha=.12f))
+            else if(condition=="Regen" || condition=="Gewitter") drawRect(Color(0xFFD5E8F5).copy(alpha=.06f))
+        }
+        if (animationsEnabled && lifecycle == Lifecycle.State.RESUMED && visible) WeatherOverlay(condition, night)
     }
 }
 
 @Composable
-private fun WeatherOverlay(condition: String) {
+private fun WeatherOverlay(condition: String, night: Boolean) {
     val context = LocalContext.current
     val lowMemory = remember(context) {
         context.getSystemService(ActivityManager::class.java).isLowRamDevice
@@ -123,10 +136,10 @@ private fun WeatherOverlay(condition: String) {
     val flash = remember(condition) { mutableFloatStateOf(0f) }
     LaunchedEffect(condition) {
         if (condition == "Gewitter") while (true) {
-            delay(Random.nextLong(18000, 42000))
+            delay(Random.nextLong(6000, 14000))
             if ((coroutineContext[MotionDurationScale]?.scaleFactor ?: 1f) == 0f) continue
             flash.floatValue = .25f
-            delay(90)
+            delay(160)
             flash.floatValue = 0f
         }
     }
@@ -152,15 +165,24 @@ private fun WeatherOverlay(condition: String) {
                 .025f * (1f + sin(seconds * .7f + i))), style = Stroke(stroke))
         }
         when (condition) {
-            "Sonnig" -> drawRect(Color(0xFFFFE8A6).copy(
-                alpha = .012f + .009f * (1f + sin(seconds * .3f))))
+            "Sonnig" -> {
+                // Moving translucent light on the water/garden; no bitmap movement.
+                val x=w*(.35f+.12f*sin(seconds*.28f))
+                drawCircle(Brush.radialGradient(listOf(Color(0xFFFFE4A0).copy(alpha=.14f),Color.Transparent),
+                    center=Offset(x,h*.72f),radius=w*.36f),radius=w*.36f,center=Offset(x,h*.72f))
+                repeat(5) { i ->
+                    val y=h*(.74f+i*.036f)
+                    drawLine(Color(0xFFFFE9B6).copy(alpha=.15f+.1f*sin(seconds*1.2f+i)),
+                        Offset(x-w*.1f,y),Offset(x+w*.08f,y),stroke)
+                }
+            }
             "Bewölkt" -> clipRect(bottom = h * .31f) {
-                if (cloud != null) {
-                    val width = (w * 1.45f).toInt()
-                    drawImage(cloud, dstOffset = IntOffset((w * (-.45f + phase.value * .6f)).toInt(),
-                        (h * .005f).toInt()),
-                        dstSize = IntSize(width, (width.toFloat() * cloud.height / cloud.width).toInt()),
-                        alpha = .16f * sin(phase.value * Math.PI).toFloat())
+                if (cloud != null) repeat(2) { layer ->
+                    val width=(w*(1.1f+layer*.3f)).toInt()
+                    val travel=(1f+sin(seconds*(2f*Math.PI.toFloat()/60f)+layer*1.4f))/2f
+                    drawImage(cloud,dstOffset=IntOffset((w*(-.6f+travel*.85f)).toInt(),(h*(.01f+layer*.055f)).toInt()),
+                        dstSize=IntSize(width,(width.toFloat()*cloud.height/cloud.width).toInt()),
+                        alpha=(.34f+layer*.08f)*(if(night) .5f else 1f))
                 }
             }
             "Regen", "Gewitter" -> {
@@ -205,12 +227,26 @@ private fun WeatherOverlay(condition: String) {
                 drawCircle(Color.White.copy(alpha = .36f + (i % 4) * .11f),
                     (.65f + i % 3 * .5f) * stroke, Offset(x, y))
             }
-            "Nacht" -> if (seconds in 43f..44.3f) {
-                val p = (seconds - 43f) / 1.3f
-                val x = w * (.3f + p * .5f)
-                val y = h * (.07f + p * .07f)
-                drawLine(Color.White.copy(alpha = sin(p * Math.PI).toFloat() * .6f),
-                    Offset(x, y), Offset(x - w * .065f, y - h * .014f), stroke)
+            "Nacht" -> Unit
+        }
+        if(night && condition in listOf("Nacht","Sonnig")) {
+            clipRect(left=w*.29f,right=w*.96f,bottom=h*.23f) {
+                repeat(if(lowMemory) 18 else 32) { i ->
+                    val x=w*(.3f+((i*.618034f)%1f)*.65f)
+                    val y=h*(.015f+((i*.381966f)%1f)*.18f)
+                    val brightness=.28f+.55f*((1f+sin(seconds*(.6f+i%4*.17f)+i))/2f)
+                    drawCircle(Color(0xFFE8F1FF).copy(alpha=brightness),stroke*(.45f+i%3*.25f),Offset(x,y))
+                }
+                repeat(3) { i ->
+                    val start=4f+i*18f
+                    if(seconds in start..start+1.8f) {
+                        val p=(seconds-start)/1.8f
+                        val x=w*(.35f+p*.4f)
+                        val y=h*(.03f+i*.025f+p*.075f)
+                        drawLine(Brush.linearGradient(listOf(Color.Transparent,Color.White.copy(alpha=sin(p*Math.PI).toFloat()*.8f)),
+                            Offset(x-w*.1f,y-h*.018f),Offset(x,y)),Offset(x-w*.1f,y-h*.018f),Offset(x,y),stroke)
+                    }
+                }
             }
         }
     }
