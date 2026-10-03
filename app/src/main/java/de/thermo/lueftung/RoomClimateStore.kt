@@ -12,13 +12,14 @@ data class RoomClimateReading(
     val dewPointC: Float,
     val absoluteHumidityGramsPerCubicMeter: Float,
     val measuredAtMillis: Long,
-    val sourceSensorIds: Set<String> = emptySet()
+    val sourceSensorIds: Set<String> = emptySet(),
+    val isDemo: Boolean = false
 )
 
 /** Event-driven latest values for the UI, independent of animation and timer clocks.
  * This is not a historical event log or a connected Tuya implementation.
  */
-class RoomClimateStore {
+class RoomClimateStore(private val onAccepted: ((String, RoomClimateReading) -> Unit)? = null) {
     private val mutableReadings = MutableStateFlow<Map<String, RoomClimateReading>>(emptyMap())
     val readings: StateFlow<Map<String, RoomClimateReading>> = mutableReadings.asStateFlow()
 
@@ -31,11 +32,14 @@ class RoomClimateStore {
             reading.absoluteHumidityGramsPerCubicMeter >= 0f)
         require(reading.measuredAtMillis > 0)
         val snapshot = reading.copy(sourceSensorIds = reading.sourceSensorIds.toSet())
+        var accepted=false
         mutableReadings.update { current ->
+            accepted=false
             val previous = current[roomId]
             // A delayed packet must not overwrite a newer measurement.
-            if (previous != null && previous.measuredAtMillis > snapshot.measuredAtMillis) current
-            else current + (roomId to snapshot)
+            if (previous != null && previous.measuredAtMillis >= snapshot.measuredAtMillis) current
+            else { accepted=true; current + (roomId to snapshot) }
         }
+        if(accepted) onAccepted?.invoke(roomId,snapshot)
     }
 }

@@ -1,140 +1,159 @@
-# Thermo Lüftung V11.22
+# Thermo Lüftung V11.25
 
-Weiterentwicklung des vorhandenen Android-Studio-Projekts aus
-`ThermoLueftungsApp_V11_19_Sechs_Wetter_Portrait_Richtig.zip`.
+Android-Studio-Projekt auf **thermo-v11-20-test**. `main` bleibt unverändert.
+Aktuelle Projektdatei: **Thermo-APP_V11.25_Historie-Excel-Timer-Raumampel.zip**.
+[Projektdateien auf GitHub](downloads/README.md) · [Prüfbericht](docs/Pruefbericht_V11.25_Historie-Excel-Timer-Raumampel.md)
 
-## Oberfläche
+## Neu in V11.25
 
-- Sechs eigenständige Wetterszenen: Sonnig, Bewölkt, Regen, Gewitter, Schnee und Nacht.
-- Gemeinsame Haus-/Garten-/Teichkomposition nach dem bereitgestellten Referenzbild.
-- Wetterbilder: WebP, 864 × 1440 Pixel, Seitenverhältnis 3:5, `drawable-nodpi`.
-- Die Startseite zeigt die Szene vollständig mit `ContentScale.Fit`. Auf kleineren
-  Displays ist der Inhalt scrollbar; die Navigation bleibt erreichbar.
-- Glasflächen für Außenwetter, Lüftung, Garten/Außenluft/Luftqualität und Vorhersage.
-- Wetterumschaltung: **Einstellungen → Wetter-Szenen testen → Wetter auswählen → Start**.
-- Feste Hintergrundbilder mit separater Animation: Licht/Wasser, transparente
-  Wolkentextur, Regen mit Tiefenstaffelung und Teichringen, seltene Gewitterblitze,
-  taumelnder Schnee und dezente nächtliche Reflexionen/Sternschnuppe.
-- Die Animation zeichnet mit maximal 30 Bildern pro Sekunde innerhalb der Canvas, pausiert außerhalb des sichtbaren
-  Bereichs sowie bei nicht aktiver App und verwendet höchstens 96 Regenpartikel
-  bzw. 160 Schneeflocken; auf Low-RAM-Geräten höchstens 40 Regenpartikel bzw. 64 Schneeflocken. Wetteranimationen lassen sich in den Einstellungen abschalten. Gewitterblitze folgen zufällig nach 6–14 Sekunden.
-- Die 13 Räume und die vorhandenen Stockwerkbilder sind erhalten. Die Raumliste lädt Einträge bedarfsgerecht über `LazyColumn`.
-- Eigene Raumbilder werden in Übersicht, Raumdetail und Einstellungen angezeigt.
-  Dokumentzugriffe bleiben gespeichert; Bilder werden im Hintergrund verkleinert
-  geladen, Fotoorientierung berücksichtigt und bei fehlendem Zugriff durch das
-  Standardbild ersetzt. **Demo-Bild** setzt die Auswahl zurück.
+- Eigenes fotografisches Standardbild für das Bad; eigene Raumbilder bleiben möglich.
+- Historie mit vollständiger Raumauswahl, Tag/Woche/Monat/Jahr und unabhängig
+  auswählbaren Kurven für Temperatur, Feuchte und Taupunkt. Temperatur/Taupunkt
+  teilen die °C-Skala; Feuchte nutzt eine eigene 0–100-%-Skala.
+- Dauerhafte SQLite-Aufzeichnung angenommener Raum-Messwerte sowie Lüftungs-,
+  Fenster-, Tür- und Heizungsereignisse. Kein nachträgliches Erfinden fehlender Daten.
+- Excel-Export der aktuellen Auswahl: Messwerte, Ereignisse, Start-/Endklima soweit
+  vorhanden, Gesamtdauer und Dauer innerhalb des Zeitraums sowie ein bearbeitbares
+  Diagramm mit getrennten Achsen und Lüftungs-/Heizungsmarkern.
+- Lüftungsdauer als konservative Schätzung aus Raum-/Außenklima, Temperaturdifferenz,
+  Kellerwand und gegebenenfalls Querlüftung. Zu kalte Räume bekommen keine automatische
+  Trocknungsempfehlung. Manuelle Timer bleiben möglich.
+- Hintergrundtimer mit dauerhafter Android-Benachrichtigung, Countdown, Schließen-/
+  Beenden-Aktion, Ablaufbenachrichtigung und Alarmton (maximal 60 Sekunden).
+- Gemeinsamer Ereigniseingang für Fenster-/Türkontakte und Heizungszustände:
+  erstes geöffnetes Fenster startet, weitere Fenster starten nicht neu; das letzte
+  geschlossene Fenster beendet den Timer. Eine geöffnete Tür begrenzt die Restzeit
+  bei Querlüftung auf maximal zwei Minuten. Automatik ist bislang nur als Demo testbar.
+- Lokale Android-Klimabenachrichtigungen bei frischen echten Werten: mindestens
+  70 % RH, zu kalter Raum (17 °C, Keller 14 °C), aktuell günstige Trocknung ab 60 % RH.
+  Nur mit passenden Außen-/Kellerwandwerten wird Lüftung empfohlen. Wiederholungen
+  gleicher Hinweise sind auf zwei Stunden begrenzt; neue Zustandswechsel melden sich erneut.
+- Dunkles Farbschema für lesbare nicht ausgewählte Filter und Eingabefelder.
 
-**Raummesswerte, Vorhersage, Gartenwerte, Luftqualität, Lüftungsberatung,
-Gerätezustände und Automationsanzeigen bleiben Demo-Daten.** Das aktuelle Wetter
-wird separat aus Open-Meteo-Modellwerten abgerufen und als solches gekennzeichnet.
-Ohne aktuelle Daten steht ausdrücklich „Demo · Wetterdaten fehlen“ in der Wetterkarte.
-Tuya, echte Fensterkontakte, Gerätebefehle und automatische Lüftungs-/Heizungslogik
-sind noch nicht integriert.
+V11.25 enthält außerdem die bislang unveröffentlichten Änderungen V11.23/V11.24:
+kleine einseitig ziehende Wolken, Entfeuchter-Empfehlung und Standort in Raumdetails
+sowie die Raumampel und ihre Legende oberhalb der Stockwerkregister.
 
-## Android Studio
+## Android Studio und Emulator
 
-1. Diesen vorhandenen Projektordner öffnen.
-2. Android SDK 35 installieren und Gradle synchronisieren.
-3. JDK 17 oder neuer verwenden (Cloud-Build geprüft mit Java 21).
-4. Modul `app` starten. Android 8.0/API 26 oder neuer ist erforderlich.
+1. ZIP entpacken und den enthaltenen Projektordner in Android Studio öffnen.
+2. Android SDK 35 installieren, JDK 17 oder neuer verwenden, Gradle synchronisieren.
+3. Modul `app` im Emulator starten (Android 8.0/API 26 oder neuer).
 
-Der Gradle Wrapper ist enthalten und verwendet Gradle 8.9 mit dem offiziellen
-SHA-256-Prüfwert. AGP 8.7.3, Kotlin/Compose-Plugin 2.0.21 und Compose BOM
-2024.12.01 entsprechen dem übernommenen Projekt.
+Gradle 8.9 mit offiziellem SHA-256-Prüfwert, AGP 8.7.3, Kotlin 2.0.21,
+Compose BOM 2024.12.01. App-Version **11.25**, versionCode **31**.
 
 ```sh
 ./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest
 ```
 
-Die Test-APK liegt anschließend unter `app/build/outputs/apk/debug/app-debug.apk`.
+Die APK wird lokal unter `app/build/outputs/apk/debug/app-debug.apk` erzeugt;
+bereitgestellt wird ausschließlich die Projekt-ZIP.
+
+### Funktionen ohne echte Geräte prüfen
+
+- **Historie → Demo-Vorschau** einschalten, Raum und Zeitraum wechseln und
+  Kurven einzeln/zusammen aktivieren. Die erzeugten Beispieldaten werden nicht
+  als echte Messreihe gespeichert. Der Export ist ausdrücklich `DEMO` benannt.
+- **Start → Lüftung/Timer** oder **Raumdetail → Lüftungsberatung & Timer**:
+  Benachrichtigungen erlauben, Dauer wählen, Timer starten, App verlassen.
+  Nach Ablauf Fenster schließen und in App/Benachrichtigung bestätigen.
+- **Sensortests öffnen · Demo**: Testklima speichern, Testfenster/Tür öffnen und
+  schließen, Testheizung ein-/ausschalten. Diese Werte/Ereignisse werden dauerhaft
+  mit Demo-Quelle gespeichert und erscheinen ohne generierte Demo-Vorschau in der Historie.
+- Der manuelle Timer speichert bei bisher unverbundenen Räumen eine explizite
+  Demo-Momentaufnahme der angezeigten Raumwerte. Fehlende Klimamessungen bleiben leer.
+- **Raumdetail → Entfeuchter**: nach Umstellen Standort wählen und manuell „Läuft“
+  oder „Gestoppt“ melden; anschließend Ampel in der Raumübersicht prüfen.
+- **Einstellungen → Wetter-Szenen testen**: Sonnig/Bewölkt/Regen/Nacht und andere
+  Szenen wählen; Tageszeit und Animationsschalter separat prüfen.
+
+Der zusätzliche Gerätetest verwendet einen eigenen Instrumentation-Runner:
+
+```sh
+./gradlew :app:assembleDebugAndroidTest
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb shell am instrument -w de.thermo.lueftung.test/de.thermo.lueftung.HistoryRuntimeInstrumentation
+```
+
+Nur im Testemulator ausführen: SQLite-Kerntests nutzen eine isolierte Datenbank;
+der anschließende Hintergrundtest erzeugt ausdrücklich markierte Demo-Ereignisse
+im Raum „Bühne (Kinderzimmer 2)“ und spielt nach einer Minute den Alarmton ab.
+
+## Grenzen echter Sensoren und Benachrichtigungen
+
+**Tuya/Smart Life, Midea, Home Assistant, MQTT und echte Fensterkontakte sind noch
+nicht verbunden.** Die konkrete Schnittstelle und Gerätezuordnung fehlen.
+Ein vertrauenswürdiger Adapter kann kohärente Klimawerte an `ThermoRuntime.climate`
+und Kontakt-/Heizungsereignisse an `ThermoRuntime.sensorEvent` liefern. Ein bloßer
+Ereigniseingang ist noch keine laufende Geräteintegration. Es gibt keine echte
+Heizungs- oder Entfeuchtersteuerung; „Läuft“ ist eine manuelle Betriebsmeldung.
+
+Benachrichtigungen werden **lokal auf Android** erzeugt, nicht von einem eingerichteten
+Cloud-Pushdienst. Ohne fortlaufende echte Sensorversorgung sind automatische
+Klimaalarme nicht möglich. Demo-Werte lösen keine echten Klimaempfehlungen aus.
+Der periodische Android-Job prüft ungefähr alle 15 Minuten; Energiesparen kann ihn
+verzögern. „Günstig“ bezeichnet den aktuellen Trocknungszustand, keine Vorhersage
+des optimalen Zeitpunkts über einen ganzen Tag.
+
+Android 13+ benötigt Benachrichtigungsfreigabe. Für pünktliche Timeralarme auch im
+Ruhezustand benötigt Android 12+ die optionale Freigabe „Exakte Timeralarme“.
+Ohne sie können Energiesparregeln den Ablaufalarm verzögern. Die App verwendet
+Androids dauerhafte Benachrichtigung/Countdown; ein fremdes Vordergrundfenster
+oder ein Samsung-Systemtimer wird nicht erzwungen. „Nicht stören“, stummgeschaltete
+Kanäle und Herstellerregeln können Anzeige/Ton beeinflussen.
+
+Laufende Timer werden gespeichert und bei App-Neustart wiederhergestellt. Innerhalb
+desselben Geräteboots schützt eine monotone Zeitbasis vor Uhrzeitänderungen; nach
+Geräteneustart wird die gespeicherte Uhrzeit verwendet. Nach Zwangsstopp muss die
+App wieder geöffnet werden. Heizenergie wird nicht in kWh berechnet: dafür fehlen
+Raum-/Gebäude- und Heizungsdaten. Die Kältegrenzen sind vorsichtige Standardwerte.
+
+## Wetter, Wolken und Leistung
+
+Wetterort: **74597 Stimpfach · Rechenberg**, näherungsweise 49,065° N / 10,145° E.
+Open-Meteo liefert Raster-/Modellwetter, keine lokale Stationsmessung. Abruf beim
+Start und alle 15 Minuten; Daten über 90 Minuten alt werden verworfen. Fehlende
+Daten: **Demo · Wetterdaten fehlen**. Vorhersage, Gartenwerte und Luftqualität
+bleiben ausdrücklich Demo. Der Cloud-Proxy blockiert den Live-Wetterdienst aktuell;
+die genaue Ortskoordinate und Live-Antwort wurden hier nicht extern verifiziert.
+
+Die unscharfe verschobene Kopie des fotografierten Himmels wurde entfernt.
+Der Originalhimmel bleibt scharf; einzelne kleine Wolken ziehen mit unterschiedlichen
+Abständen, Größen und Geschwindigkeiten gleichmäßig von links nach rechts. Sie
+wechseln erst außerhalb des Bildes auf die andere Seite. Die fotografierten
+Grundwolken bleiben Bestandteil des festen Bildes. Keine Richtungsumkehr im Bild.
+Weiche Masken vermeiden die Wolkenkante am Wald und über Vordergrundblättern.
+
+Teichstreifen, Wasserreflexe, Laubbereiche und Sonnenreflexe bewegen sich lokal;
+nachts ergänzt durch warme Lampenreflexe, sanftes Flackern und zufällige funkelnde
+Sterne. Regen/Schnee/Wolkendecke steuern Zahl und Deckkraft der Effekte.
+Haus und Bildausschnitt bleiben fest. Höchstens 30 Aktualisierungen pro Sekunde,
+begrenzte Partikelzahlen, reduzierte Last auf Low-RAM-Geräten, Pausen bei unsichtbarer/
+inaktiver App und abschaltbare Animationen. Die Historie reduziert nur die Bildschirmkurve;
+im Excel-Export bleiben alle ausgewählten gespeicherten Messpunkte enthalten.
+
+## Entfeuchter und Raumampel
+
+Standort und Betriebsmeldung sind gemeinsam gespeichert. Ein Standortwechsel setzt
+den gemeldeten Betrieb zurück. Grün = hier manuell als laufend gemeldet; Rot =
+Feuchte-/Wandklimabedarf; Gelb = Gerät steht hier, nicht als laufend gemeldet.
+Grün hat Vorrang, danach Rot, danach Gelb. Ohne Standort und Bedarf keine Ampel.
+Bei rotem Bedarf mit Gerät im Raum wird der Standort zusätzlich genannt.
+Ohne aktuelle Wandmessung bleibt das Wandrisiko offen; Demoanalysen sind markiert.
 
 ## Cloud-Umgebung
 
-Im bestehenden isolierten Checkout `/workspace/Thermo-APP` arbeiten; nur auf
-ausdrücklichen Wunsch einen Git Worktree erstellen.
-
-`tools/setup-cloud.sh` richtet die Werkzeuge unter `/workspace/toolchains` ein,
-verifiziert Downloads, aktiviert den Cloud-Proxy für Java-Werkzeuge und führt Build
-Lint und Unit-Tests aus. Quelltexte werden durch das Setup-Skript nicht verändert.
+Im isolierten Checkout `/workspace/Thermo-APP` arbeiten. `tools/setup-cloud.sh`
+richtet verifizierte Werkzeuge unter `/workspace/toolchains` und Java-Proxyvertrauen
+für den verwalteten Cloud-Build ein. Java 21 und Android SDK 35 sind geprüft.
 
 ```sh
-cd /workspace/Thermo-APP
-./tools/setup-cloud.sh
+bash tools/setup-cloud.sh
 ```
 
-Emulatorprozesse überleben eine neue Cloud-Aufgabe nicht. Die zugehörigen
-Startanweisungen sind in der Cloud-Umgebung gespeichert. Ohne `/dev/kvm` dauert der
-Android-Start in dieser Maschine erheblich länger. Softwareemulation dient der
-Funktions- und Bildprüfung; Flüssigkeit, Akkunutzung und Speicherverhalten müssen
-zusätzlich auf einem echten schwächeren Android-Gerät beurteilt werden.
-
-## Vorbereitung für Messwerte
-
-`RoomClimateStore` nimmt kohärente Raum-Messwerte mit Zeitstempel ereignisgesteuert entgegen. `StateFlow` aktualisiert sichtbare Raumanzeigen unabhängig von Wetteranimation und Timer. Verzögerte Pakete ersetzen keine neueren Messungen. Die Geräteanbindung und historische Speicherung sind noch nicht implementiert; die aktuellen Anzeigen bleiben Demo-Werte, bis ein Adapter echte Messwerte liefert.
-
-## Taupunkt, aw und Trocknung
-
-Die Raumansicht enthält eine aw-Schätzung nach manueller Eingabe der gemessenen Wandtemperatur und eine taupunktbezogene Lüftungsberatung. Außenwerte bleiben Demo-Werte. Die Beratung berücksichtigt kalte Kellerwände und trennt IR-Heizung von echter Wasserentfernung durch Lüften oder Entfeuchten. Geräteausstattung und nächste Integrationsschritte: [CLIMATE_NOTES.md](CLIMATE_NOTES.md).
-
-## Mobiler Entfeuchter
-
-Unter **Geräte** vergleicht die App die drei getrennten Kellerräume und empfiehlt bei erhöhtem Feuchtebedarf einen Einsatzort. Ohne Wandmessung wird allein die Luftfeuchte bewertet und kein aw erfunden. Die Analyse ist bis zur Sensoranbindung als Demo gekennzeichnet. Der aktuelle Standort des Midea lässt sich manuell wählen und wird gespeichert. Empfehlungen verschieben die Standortzuordnung nicht automatisch.
-
-## Änderungen V11.21
-
-- Deutlichere bewegte Wolkentexturen und Sonnenreflexionen bei festem Hintergrund.
-- Funkelnde Sterne und drei gelegentliche Sternschnuppen je Minute im klaren Nachthimmel.
-- Gewitterblitze etwa alle 6–14 Sekunden.
-- Licht nach Geräte-Uhrzeit: Nacht 21–6 Uhr, Dämmerung 6–9/18–21 Uhr, sonst Tag.
-  Regen/Gewitter tagsüber heller, Wetter nachts dunkler; klare Nächte verwenden
-  das Nachtbild. Dies ist eine Uhrzeit-Näherung, keine standortbezogene Berechnung
-  von Sonnenauf- und Sonnenuntergang.
-- Einstellungen zeigen eine vollständige, kompakte animierte Hochformat-Vorschau
-  vor den Temperaturzielen. Auto/Mittag/Abend/Nacht erlauben den Lichtvergleich.
-- Der Animationsschalter und die systemweite Bewegungsreduzierung bleiben wirksam.
-
-## Wetterüberarbeitung auf dem Testbranch
-
-- Wetterort: **74597 Stimpfach, Ortsteil Rechenberg**; näherungsweise Ortskoordinate
-  49,065° N / 10,145° E. Open-Meteo liefert Raster-/Modellwerte, keine lokale
-  Stationsmessung. Die genaue Ortskoordinate wurde in dieser Cloud nicht extern verifiziert.
-- Aktuelles Wetter wird beim Start und alle 15 Minuten im Hintergrund geladen.
-  Daten über 90 Minuten alt oder über 5 Minuten in der Zukunft werden verworfen.
-  Ohne nutzbare Daten verwendet die Szene gekennzeichnetes Demo-Wetter.
-- Regen einschließlich Schauern (mm), Schneefall (cm) und Wolkendecke (%) steuern
-  Partikelzahl und Wolkenopazität mit begrenztem Aufwand. Null Niederschlag zeichnet
-  keine Niederschlagspartikel. WMO-Wettercodes wählen die passende Grundszene.
-- Einstellungen: manuelle Auswahl ist „Demo · Wettertest“; **Aktuelles Wetter
-  verwenden** beendet den Testmodus. Tageszeit bleibt separat prüfbar; Auto verwendet
-  die Uhrzeit in Europe/Berlin.
-- Wolken laufen weich aus; keine rechteckige Kante am Wald. Gelegentliche
-  Schleierwolken und pulsierendes, gefiltertes Sonnenlicht ergänzen die Szene.
-- Kleine Laubbereiche bewegen sich lokal, Sonnenreflexe wandern im Laub,
-  Teichreflexe sind deutlicher. Haus und Bildausschnitt bleiben fest.
-- Nacht: sanftes Lampenflackern, unabhängig zufällig verteilte Sterne mit
-  sichtbarem Funkeln. Dichterer, nach Niederschlagsdaten skalierter Schnee.
-- Internetberechtigung für HTTPS-Wetterabruf hinzugefügt. Die Cloud benötigt
-  Zugriff auf `api.open-meteo.com`; ein gespeicherter Netzwerkentwurf allein
-  schaltet den laufenden Cloud-Zugriff noch nicht frei.
-
-## V11.22 – Sichtbare Wolken-, Wasser- und Laubbewegung
-
-Der vorherige Stand bewegte vor allem schwache Lichtflächen; die meisten
-Wasserlinien lagen unter den Wetterkarten. V11.22 bewegt die Bildstruktur selbst:
-
-- Fotografierte Wolkenformen und zusätzliche Wolkentextur bei Sonnig, Bewölkt und Regen/Gewitter mit sichtbarem Zug;
-  vertikaler und seitlicher Alpha-Auslauf statt harter Waldkante.
-- Pond-Maske mit sanft gegeneinander verschobenen Bildstreifen; vorhandene
-  Wasser- und Lichtspiegelungen bewegen sich mit. Kurze wandernde Lichtglitzer
-  liegen auch auf dem frei sichtbaren Wasser oberhalb der Karten.
-- Weich maskierte Laubbereiche mit stärkerem Ausschlag und wandernden Sonnenreflexen.
-- Nacht mit bewegtem Wasser und warmen, gebrochenen Lampenreflexen;
-  die bisherige Sternverteilung bleibt erhalten.
-- Fester Bildausschnitt, statisches Haus, höchstens 30 Aktualisierungen/Sekunde;
-  reduzierte Streifen-/Laubzahl auf Low-RAM-Geräten. Animationen bleiben abschaltbar.
-
-Projektdatei: **Thermo-APP_V11.22_Wolken-Wasser-Laub.zip** im Ordner `downloads`.
-ZIP entpacken und den enthaltenen Projektordner in Android Studio öffnen.
-Downloads und Build-Ausgaben sind nicht in der Projekt-ZIP verschachtelt.
-Version in Gradle: 11.22, versionCode 28. Nur Projekt-ZIP bereitgestellt;
-keine separate APK für diesen Stand.
+Emulatorprozesse überleben eine neue Cloud-Aufgabe nicht. Ohne `/dev/kvm` ist die
+Softwareemulation langsam und dient Funktions-/Bildprüfungen, keiner belastbaren
+Aussage über Flüssigkeit, Akku oder Speicher auf einem echten Handy.
+Weitere Geräte-/Klimanotizen: [CLIMATE_NOTES.md](CLIMATE_NOTES.md).

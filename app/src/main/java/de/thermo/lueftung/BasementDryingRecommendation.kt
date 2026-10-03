@@ -14,11 +14,11 @@ import java.util.Locale
 @Composable
 fun BasementDryingRecommendation(vm: ThermoViewModel, baseRooms: List<Room>) {
     val currentRooms=baseRooms.map { liveRoom(it,vm) }
-    val demo=currentRooms.all { it.measuredAtMillis==null }
+    val demo=currentRooms.all { it.isDemo }
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) { while (true) { delay(30000); now=System.currentTimeMillis() } }
     val evaluatedAt=maxOf(now,System.currentTimeMillis())
-    val candidates=currentRooms.filter { demo || it.measuredAtMillis!=null }.map {
+    val candidates=currentRooms.filter { demo || !it.isDemo }.map {
         DryingRoomSnapshot(it.id,it.temp.toDouble(),it.humidity.toDouble(),it.measuredAtMillis ?: evaluatedAt,
             vm.wallTemperatures[it.id])
     }
@@ -30,7 +30,7 @@ fun BasementDryingRecommendation(vm: ThermoViewModel, baseRooms: List<Room>) {
         Text(if(demo) "Demoanalyse · noch keine echten Sensordaten" else "Raumweise Analyse · Werte maximal 15 Minuten alt",color=soft,fontSize=10.sp)
         currentRooms.forEach { room ->
             Text("${room.name}: ${room.temp} °C · ${room.humidity} % RH" +
-                if(!demo && room.measuredAtMillis==null) " · nicht verbunden" else "",color=soft,fontSize=11.sp)
+                if(!demo && room.isDemo) " · nicht verbunden" else "",color=soft,fontSize=11.sp)
         }
         if(suggestion==null || selected==null) {
             Text("Aktuell kein vorrangiger Raum aus den verfügbaren Werten ableitbar.",color=Color.White,fontSize=13.sp)

@@ -14,7 +14,7 @@ fun liveRoom(base: Room, vm: ThermoViewModel): Room {
     return reading?.let {
         base.copy(temp = it.temperatureC, humidity = it.relativeHumidityPercent,
             dewPoint = it.dewPointC, absHumidity = it.absoluteHumidityGramsPerCubicMeter,
-            measuredAtMillis = it.measuredAtMillis)
+            measuredAtMillis = it.measuredAtMillis, isDemo = it.isDemo)
     } ?: base
 }
 

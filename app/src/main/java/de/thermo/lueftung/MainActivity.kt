@@ -1,6 +1,13 @@
 
 package de.thermo.lueftung
 
+import android.app.Application
+import android.content.Intent
+import android.os.SystemClock
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -75,7 +82,8 @@ data class Room(
     val dewPoint: Float,
     val absHumidity: Float,
     val image: Int,
-    val measuredAtMillis: Long? = null
+    val measuredAtMillis: Long? = null,
+    val isDemo: Boolean = true
 )
 
 private val rooms = listOf(
@@ -87,7 +95,7 @@ private val rooms = listOf(
     Room("dining","Esszimmer","Erdgeschoss",21.4f,47,9.9f,8.9f,R.drawable.room_dining_clean),
     Room("kitchen","Küche","Erdgeschoss",21.2f,49,10.4f,9.3f,R.drawable.room_kitchen_clean),
     Room("pantry","Speis","Erdgeschoss",19.8f,52,9.7f,9.0f,R.drawable.room_pantry_clean),
-    Room("bath","Bad","Erdgeschoss",22.1f,61,14.2f,13.2f,R.drawable.room_bath_clean),
+    Room("bath","Bad","Erdgeschoss",22.1f,61,14.2f,13.2f,R.drawable.room_bath_default),
     Room("wc","WC","Erdgeschoss",21.0f,55,11.5f,10.4f,R.drawable.room_wc_clean),
     Room("workshop","Werkstatt","Keller",16.8f,55,7.8f,7.0f,R.drawable.room_workshop_clean),
     Room("fitness","Hobby / Fitness","Keller",17.0f,51,7.0f,6.6f,R.drawable.room_fitness_clean),
@@ -99,11 +107,17 @@ private val rooms = listOf(
     )
 }
 
-class ThermoViewModel : ViewModel() {
-    val climate = RoomClimateStore()
+fun thermoRooms(): List<Room> = rooms
+
+fun dehumidifierLocationName(id: String?): String = rooms.firstOrNull { it.id==id }?.name ?: "Nicht zugeordnet"
+
+class ThermoViewModel(application: Application) : AndroidViewModel(application) {
+    val climate = ThermoRuntime.climate
     val wallTemperatures = mutableStateMapOf<String, WallTemperatureReading>()
     var page by mutableIntStateOf(0)
     var selectedRoom by mutableStateOf<Room?>(null)
+    var historyRoomId by mutableStateOf("child1")
+    var timerSelectedRoomId by mutableStateOf<String?>(null)
     var weatherTest by mutableStateOf<String?>(null)
     var weatherData by mutableStateOf<WeatherData?>(null)
     val weather: String get() = weatherTest ?: weatherData?.condition ?: "Sonnig"
@@ -115,24 +129,58 @@ class ThermoViewModel : ViewModel() {
     }
     var sceneHourOverride by mutableStateOf<Int?>(null)
     var weatherAnimations by mutableStateOf(true)
-    var dehumidifierRoomId by mutableStateOf<String?>(null)
+    var dehumidifierPlacement by mutableStateOf(ManualDehumidifierPlacement())
+        private set
+    val dehumidifierRoomId get() = dehumidifierPlacement.roomId
+    val dehumidifierOperation get() = dehumidifierPlacement.operation
+    var dryingEvaluatedAtMillis by mutableLongStateOf(System.currentTimeMillis())
     private var imageRevision by mutableIntStateOf(0)
-    var timerRoom by mutableStateOf<String?>(null)
-    var timerSeconds by mutableIntStateOf(0)
-    var timerRunning by mutableStateOf(false)
+    var timerSnapshot by mutableStateOf<Map<String,ActiveVentilationTimer>>(emptyMap())
+        private set
+    var timerNow by mutableLongStateOf(System.currentTimeMillis())
+        private set
+    val timerRoom get() = timerSnapshot.keys.firstOrNull()
+    val timerSeconds get() = timerRoom?.let { timerSnapshot[it]?.remaining(timerNow,SystemClock.elapsedRealtime(),ThermoRuntime.bootCount()) } ?: 0
+    val timerRunning get() = timerSnapshot.isNotEmpty()
+    init {
+        viewModelScope.launch { ThermoRuntime.timers.collect { timerSnapshot=it } }
+        viewModelScope.launch { while(true) { delay(1000); if(timerSnapshot.isNotEmpty()) timerNow=System.currentTimeMillis() } }
+    }
+
+    fun loadDehumidifier(context: Context) {
+        val prefs=context.getSharedPreferences("devices", Context.MODE_PRIVATE)
+        val id=prefs.getString("dehumidifier_room", null)?.takeIf { value -> rooms.any { it.id==value } }
+        val operation=if(id==null) ManualDehumidifierOperation.UNKNOWN else
+            ManualDehumidifierOperation.entries.firstOrNull { it.name==prefs.getString("dehumidifier_operation",null) }
+                ?: ManualDehumidifierOperation.UNKNOWN
+        dehumidifierPlacement=ManualDehumidifierPlacement(id,operation)
+    }
+
+    private fun saveDehumidifier(context: Context) {
+        context.getSharedPreferences("devices", Context.MODE_PRIVATE).edit()
+            .putString("dehumidifier_room", dehumidifierRoomId)
+            .putString("dehumidifier_operation", dehumidifierOperation.name).apply()
+    }
 
     fun moveDehumidifier(context: Context, roomId: String?) {
-        require(roomId == null || roomId in setOf("fitness", "workshop", "laundry"))
-        dehumidifierRoomId = roomId
-        context.getSharedPreferences("devices", Context.MODE_PRIVATE).edit()
-            .putString("dehumidifier_room", roomId).apply()
+        require(roomId == null || rooms.any { it.id==roomId })
+        dehumidifierPlacement=dehumidifierPlacement.movedTo(roomId)
+        saveDehumidifier(context)
+    }
+
+    fun reportDehumidifier(context: Context, operation: ManualDehumidifierOperation) {
+        dehumidifierPlacement=dehumidifierPlacement.reported(operation)
+        saveDehumidifier(context)
     }
 
     fun openRoom(room: Room) { selectedRoom = room; page = 2 }
     fun startTimer(room: Room, minutes: Int = 5) {
-        timerRoom = room.id; timerSeconds = minutes * 60; timerRunning = true
+        if(room.isDemo && room.humidity>0 && climate.readings.value[room.id]==null) {
+            climate.accept(room.id,RoomClimateReading(room.temp,room.humidity,room.dewPoint,room.absHumidity,System.currentTimeMillis(),isDemo=true))
+        }
+        ThermoRuntime.startTimer(room.id,minutes,"Manuell")
     }
-    fun stopTimer() { timerRunning = false; timerSeconds = 0; timerRoom = null }
+    fun stopTimer(roomId:String?=timerRoom) { roomId?.let { ThermoRuntime.stopTimer(it) } }
 
     fun savedUri(context: Context, roomId: String): Uri? {
         imageRevision // Observe photo changes without reloading unrelated sensor/timer state.
@@ -154,12 +202,21 @@ class ThermoViewModel : ViewModel() {
 }
 
 class MainActivity : ComponentActivity() {
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val vm=ViewModelProvider(this)[ThermoViewModel::class.java]
+        if(intent.getBooleanExtra("show_timer",false)) vm.apply { selectedRoom=null;page=6;timerSelectedRoomId=intent.getStringExtra("timer_room") }
+        intent.getStringExtra("room_advice")?.let { id -> rooms.firstOrNull { it.id==id }?.let(vm::openRoom) }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ThermoRuntime.resumeTimers()
         enableEdgeToEdge(
             statusBarStyle=SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle=SystemBarStyle.dark(android.graphics.Color.rgb(6,47,69))
         )
+        if(intent.getBooleanExtra("show_timer",false)) ViewModelProvider(this)[ThermoViewModel::class.java].apply { page=6;timerSelectedRoomId=intent.getStringExtra("timer_room") }
+        intent.getStringExtra("room_advice")?.let { id -> rooms.firstOrNull { it.id==id }?.let { ViewModelProvider(this)[ThermoViewModel::class.java].openRoom(it) } }
         setContent { ThermoApp() }
     }
 }
@@ -170,26 +227,24 @@ fun ThermoApp(vm: ThermoViewModel = viewModel()) {
     LaunchedEffect(vm) {
         vm.weatherAnimations = context.getSharedPreferences("display", Context.MODE_PRIVATE)
             .getBoolean("weather_animations", true)
-        vm.dehumidifierRoomId = context.getSharedPreferences("devices", Context.MODE_PRIVATE)
-            .getString("dehumidifier_room", null)?.takeIf { it in setOf("fitness", "workshop", "laundry") }
+        vm.loadDehumidifier(context)
     }
     LaunchedEffect(vm) {
         while (true) {
-            try { vm.weatherData = WeatherRepository.fetch() }
+            try { vm.weatherData = WeatherRepository.fetch();ThermoRuntime.weather=vm.weatherData }
             catch (e: kotlinx.coroutines.CancellationException) { throw e }
-            catch (_: Exception) { if(vm.weatherData?.fresh() != true) vm.weatherData = null }
+            catch (_: Exception) { if(vm.weatherData?.fresh() != true) vm.weatherData = null;ThermoRuntime.weather=vm.weatherData }
             delay(900000)
         }
     }
-    LaunchedEffect(vm.timerRunning) {
-        while (vm.timerRunning && vm.timerSeconds > 0) {
-            delay(1000)
-            vm.timerSeconds--
-        }
-        if (vm.timerSeconds <= 0) vm.timerRunning = false
+    LaunchedEffect(vm) {
+        while (true) { delay(30000); vm.dryingEvaluatedAtMillis=System.currentTimeMillis();ThermoRuntime.walls.putAll(vm.wallTemperatures) }
     }
 
-    MaterialTheme {
+    MaterialTheme(colorScheme=darkColorScheme(primary=Cyan,secondary=Sky,background=Navy,surface=Navy2,
+        onSurface=Color.White,onBackground=Color.White,onPrimary=Navy,onSecondary=Navy,
+        secondaryContainer=Cyan.copy(alpha=.20f),onSecondaryContainer=Color.White,
+        primaryContainer=Navy2,onPrimaryContainer=Color.White,outline=GlassLine)) {
         Surface(Modifier.fillMaxSize(), color = Navy) {
             when {
                 vm.selectedRoom != null -> RoomDetailScreen(vm, vm.selectedRoom!!)
@@ -479,6 +534,7 @@ fun RoomsScreen(vm: ThermoViewModel) {
             Text("Raumliste",color=Color.White,fontSize=20.sp,fontWeight=FontWeight.Bold,modifier=Modifier.weight(1f))
             Text("13 Räume",color=TextSoft,fontSize=12.sp)
         }
+        DehumidifierLegend()
         FloorRegister(selectedFloor) { selectedFloor=it }
         Row(Modifier.fillMaxWidth().padding(start=16.dp,end=16.dp,top=10.dp,bottom=8.dp),
             verticalAlignment=Alignment.CenterVertically) {
@@ -517,14 +573,15 @@ fun RoomGlassRow(baseRoom:Room,vm:ThermoViewModel) {
                     Text("${room.temp} °C  ·  ${room.humidity} %",color=Color.White,fontSize=11.sp)
                     Text("TP ${room.dewPoint} °C",color=TextSoft,fontSize=10.sp)
                     Spacer(Modifier.height(6.dp))
-                    if(room.measuredAtMillis==null) Text("Alles gut",color=Good,fontWeight=FontWeight.Bold,fontSize=12.sp)
-                    else Text("Messung ${measurementTime(room.measuredAtMillis)}",color=TextSoft,fontSize=10.sp)
+                    if(room.isDemo) Text("Raumwerte · Demo",color=TextSoft,fontSize=10.sp)
+                    else Text("Messung ${room.measuredAtMillis?.let(::measurementTime) ?: "—"}",color=TextSoft,fontSize=10.sp)
                 } else {
                     Text("Noch nicht ausgebaut",color=TextSoft,fontSize=11.sp)
                 }
             }
             Icon(Icons.Filled.ChevronRight,null,tint=Cyan,modifier=Modifier.align(Alignment.CenterVertically).padding(10.dp))
         }
+        RoomDehumidifierStatus(room,vm,Modifier.padding(horizontal=12.dp,vertical=6.dp))
     }
 }
 
@@ -564,7 +621,7 @@ fun RoomDetailScreen(vm:ThermoViewModel,baseRoom:Room) {
                     Icon(Icons.Filled.CheckCircle,null,tint=Good)
                     Spacer(Modifier.width(10.dp))
                     Column {
-                        Text(if(room.measuredAtMillis==null) "Raumklima · Demowerte" else "Raumklima · Sensormessung",color=Color.White,fontWeight=FontWeight.Bold)
+                        Text(if(room.isDemo) "Raumklima · Demowerte" else "Raumklima · Sensormessung",color=Color.White,fontWeight=FontWeight.Bold)
                         Text("Lüftung und Wandklima unten prüfen",color=TextSoft,fontSize=10.sp)
                     }
                 }
@@ -579,6 +636,8 @@ fun RoomDetailScreen(vm:ThermoViewModel,baseRoom:Room) {
                 MetricGlass("Taupunkt","${room.dewPoint} °C",Icons.Filled.AcUnit,Modifier.weight(1f))
                 MetricGlass("Abs. Feuchte","${room.absHumidity} g/m³",Icons.Filled.Cloud,Modifier.weight(1f))
             }
+            Spacer(Modifier.height(14.dp))
+            RoomDehumidifierCard(room,vm)
             Spacer(Modifier.height(14.dp))
             WallClimateCard(room,vm)
             Spacer(Modifier.height(14.dp))
@@ -598,20 +657,11 @@ fun RoomDetailScreen(vm:ThermoViewModel,baseRoom:Room) {
             Spacer(Modifier.height(14.dp))
             Text("Fensterkontakt",color=Color.White,fontWeight=FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
-            GlassCard(Modifier.fillMaxWidth(),alpha=.62f,padding=PaddingValues(13.dp)) {
-                Row(verticalAlignment=Alignment.CenterVertically) {
-                    Icon(Icons.Filled.Window,null,tint=Good)
-                    Spacer(Modifier.width(10.dp))
-                    Column(Modifier.weight(1f)){Text("Fenster geschlossen",color=Color.White,fontWeight=FontWeight.Bold);Text("Status kommt später direkt vom Fensterkontakt.",color=TextSoft,fontSize=9.sp)}
-                    Text("ZU",color=Good,fontWeight=FontWeight.Bold)
-                }
-            }
+            RoomContactCard(room)
             Spacer(Modifier.height(10.dp))
-            Button(
-                onClick={vm.startTimer(room)},modifier=Modifier.fillMaxWidth().height(48.dp),
-                shape=RoundedCornerShape(24.dp),
-                colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Navy)
-            ){Icon(Icons.Filled.Air,null);Spacer(Modifier.width(8.dp));Text("Stoßlüften starten · ca. 5 min",fontWeight=FontWeight.Bold)}
+            RoomVentilationCard(room,vm)
+            Spacer(Modifier.height(10.dp))
+            RoomSensorTestCard(room)
             Spacer(Modifier.height(14.dp))
             Text("Heizung",color=Color.White,fontWeight=FontWeight.Bold)
             GlassCard(Modifier.fillMaxWidth(),alpha=.62f) {
@@ -625,7 +675,7 @@ fun RoomDetailScreen(vm:ThermoViewModel,baseRoom:Room) {
             Spacer(Modifier.height(16.dp))
             Text("Raumfunktionen",color=Color.White,fontWeight=FontWeight.Bold)
             listOf("Raum Einstellungen","Zeitpläne / Automatik","Verlauf","Geräte im Raum").forEach {
-                GlassCard(Modifier.fillMaxWidth().padding(vertical=4.dp),alpha=.50f,padding=PaddingValues(14.dp)) {
+                GlassCard(Modifier.fillMaxWidth().padding(vertical=4.dp).clickable { if(it=="Verlauf") { vm.historyRoomId=room.id;vm.selectedRoom=null;vm.page=3 } },alpha=.50f,padding=PaddingValues(14.dp)) {
                     Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Filled.ChevronRight,null,tint=Cyan);Spacer(Modifier.width(8.dp));Text(it,color=Color.White)}
                 }
             }
@@ -645,61 +695,22 @@ fun MetricGlass(label:String,value:String,icon:androidx.compose.ui.graphics.vect
 
 @Composable
 fun TimerScreen(vm:ThermoViewModel) {
-    AppScaffold("Lüftung & Timer","Live-Timer für Stoßlüften",6,null,vm) {
-        Spacer(Modifier.height(8.dp))
-        rooms.filter{it.temp>0}.forEach { room ->
-            GlassCard(Modifier.fillMaxWidth().padding(horizontal=12.dp,vertical=5.dp),alpha=.62f) {
-                Row(verticalAlignment=Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(room.name,color=Color.White,fontWeight=FontWeight.Bold)
-                        Text(if(vm.timerRoom==room.id) "Timer ${vm.timerSeconds/60}:${(vm.timerSeconds%60).toString().padStart(2,'0')}" else "Fenster geschlossen",color=TextSoft,fontSize=10.sp)
-                    }
-                    Button(onClick={ if(vm.timerRoom==room.id) vm.stopTimer() else vm.startTimer(room) },shape=RoundedCornerShape(22.dp),colors=ButtonDefaults.buttonColors(containerColor=Cyan,contentColor=Navy)) {
-                        Text(if(vm.timerRoom==room.id) "Stop" else "Start")
-                    }
+    val roomId=vm.timerSelectedRoomId ?: vm.timerRoom ?: "bath"
+    var expanded by remember { mutableStateOf(false) }
+    val room=liveRoom(rooms.first { it.id==roomId },vm)
+    AppScaffold("Lüftung & Timer","Benachrichtigung · Fenster-Erinnerung",6,null,vm) {
+        Column(Modifier.padding(12.dp)) {
+            Box {
+                OutlinedButton(onClick={expanded=true},modifier=Modifier.fillMaxWidth()) { Text("Raum: ${room.name}",color=Color.White) }
+                DropdownMenu(expanded=expanded,onDismissRequest={expanded=false}) {
+                    rooms.forEach { candidate -> DropdownMenuItem(text={Text(candidate.name)},onClick={vm.timerSelectedRoomId=candidate.id;expanded=false}) }
                 }
             }
+            vm.timerSnapshot.values.filter { it.roomId!=roomId }.forEach { timer -> TextButton(onClick={vm.timerSelectedRoomId=timer.roomId}) { Text("Aktiver Timer: ${dehumidifierLocationName(timer.roomId)}") } }
+            RoomVentilationCard(room,vm)
+            Spacer(Modifier.height(10.dp))
+            RoomSensorTestCard(room)
         }
-        Spacer(Modifier.height(8.dp))
-    }
-}
-
-@Composable
-fun HistoryScreen(vm:ThermoViewModel) {
-    AppScaffold("Historie","Temperatur · Feuchte · Lüftung",3,null,vm) {
-        Spacer(Modifier.height(8.dp))
-        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=12.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            listOf("Kinderzimmer 1","Bühne (Kinderzimmer 2)","Büro","Wohnzimmer","Bad").forEachIndexed { i,s -> Pill(s,i==0){} }
-        }
-        Spacer(Modifier.height(14.dp))
-        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=12.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            listOf("Tag","Woche","Monat","Jahr").forEachIndexed { i,s -> Pill(s,i==0){} }
-        }
-        Spacer(Modifier.height(14.dp))
-        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=12.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-            listOf("Feuchte","Temperatur","Taupunkt").forEachIndexed { i,s -> Pill(s,i==0){} }
-        }
-        Spacer(Modifier.height(14.dp))
-        GlassCard(Modifier.fillMaxWidth().padding(horizontal=12.dp),alpha=.66f) {
-            Text("Kinderzimmer 1 · Luftfeuchtigkeit",color=Color.White,fontSize=17.sp,fontWeight=FontWeight.Bold)
-            Text("Heute · je Stunde",color=TextSoft,fontSize=10.sp)
-            Spacer(Modifier.height(14.dp))
-            Canvas(Modifier.fillMaxWidth().height(230.dp)) {
-                for(i in 0..4) drawLine(Color.White.copy(alpha=.10f),Offset(0f,size.height*i/4),Offset(size.width,size.height*i/4))
-                val pts=(0..23).map { i -> Offset(size.width*i/23f, size.height*(.5f+.22f*sin(i/2.2f))) }
-                for(i in 0 until pts.lastIndex) drawLine(Cyan.copy(alpha=.8f),pts[i],pts[i+1],strokeWidth=3f)
-            }
-            Text("Feuchte in %   ·   Lüften",color=TextSoft,fontSize=10.sp)
-        }
-        Spacer(Modifier.height(14.dp))
-        GlassCard(Modifier.fillMaxWidth().padding(horizontal=12.dp),alpha=.50f) {
-            Text("Lüftungsereignisse",color=Color.White,fontWeight=FontWeight.Bold)
-            Spacer(Modifier.height(8.dp))
-            listOf("Kinderzimmer 1 · 14:05 · 5 min","Wohnzimmer · 17:20 · 8 min","Bad · 18:10 · 5 min").forEach {
-                Row(Modifier.fillMaxWidth().padding(vertical=6.dp)){Icon(Icons.Filled.Air,null,tint=Cyan,modifier=Modifier.size(18.dp));Spacer(Modifier.width(8.dp));Text(it,color=TextSoft,fontSize=11.sp)}
-            }
-        }
-        Spacer(Modifier.height(8.dp))
     }
 }
 
@@ -734,13 +745,14 @@ fun DevicesScreen(vm:ThermoViewModel) {
         GlassCard(Modifier.fillMaxWidth().padding(horizontal=12.dp),alpha=.62f) {
             Text("Mobiler Entfeuchter · Standort",color=Color.White,fontWeight=FontWeight.Bold)
             Text("Nach jedem Umstellen den aktuellen Raum wählen. Der Standort wird manuell gespeichert.",color=TextSoft,fontSize=11.sp)
-            val locations=listOf(null to "Nicht zugeordnet", "fitness" to "Hobby / Fitness", "workshop" to "Werkstatt", "laundry" to "Wäschekeller")
+            val locations=listOf(null to "Nicht zugeordnet") + rooms.map { it.id to it.name }
             locations.forEach { (id,label) ->
                 Row(Modifier.fillMaxWidth().clickable { vm.moveDehumidifier(context,id) },verticalAlignment=Alignment.CenterVertically) {
                     RadioButton(selected=vm.dehumidifierRoomId==id,onClick={ vm.moveDehumidifier(context,id) },colors=RadioButtonDefaults.colors(selectedColor=Cyan,unselectedColor=TextSoft))
                     Text(label,color=Color.White,fontSize=13.sp)
                 }
             }
+            DehumidifierOperationPicker(vm)
             Text("Zuordnung ist kein Betriebsnachweis. Midea/NetHome Plus und Anker sind noch nicht verbunden.",color=TextSoft,fontSize=10.sp)
         }
         Spacer(Modifier.height(12.dp))

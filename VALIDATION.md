@@ -1,4 +1,8 @@
-Aktueller Prüfbericht: [V11.22 – Wolken, Wasser und Laub](docs/Pruefbericht_V11.22_Wolken-Wasser-Laub.md).
+Aktueller Prüfbericht: [V11.25 – Historie, Excel, Timer und Raumampel](docs/Pruefbericht_V11.25_Historie-Excel-Timer-Raumampel.md).
+
+Vorheriger Prüfbericht: [V11.23 – Kleine ziehende Wolken](docs/Pruefbericht_V11.23_Kleine-ziehende-Wolken.md).
+
+Vorheriger Prüfbericht: [V11.22 – Wolken, Wasser und Laub](docs/Pruefbericht_V11.22_Wolken-Wasser-Laub.md).
 
 Die folgenden Ergebnisse beschreiben den vorherigen V11.21-Stand.
 

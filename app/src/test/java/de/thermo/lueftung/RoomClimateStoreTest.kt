@@ -34,6 +34,13 @@ class RoomClimateStoreTest {
         assertEquals(1000L, store.readings.value.getValue("office").measuredAtMillis)
     }
 
+    @Test fun historyCallbackOnlyReceivesAcceptedNewPackets() {
+        val times=mutableListOf<Long>()
+        val store=RoomClimateStore { _,reading -> times.add(reading.measuredAtMillis) }
+        store.accept("office",reading(2000));store.accept("office",reading(2000));store.accept("office",reading(1000));store.accept("office",reading(3000))
+        assertEquals(listOf(2000L,3000L),times)
+    }
+
     @Test fun sourceSensorSetIsCopiedBeforePublication() {
         val store = RoomClimateStore()
         val ids = mutableSetOf("sensor-a")

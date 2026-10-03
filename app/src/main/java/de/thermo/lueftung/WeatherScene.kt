@@ -34,7 +34,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -126,6 +125,12 @@ private fun WeatherOverlay(condition: String, night: Boolean, dusk: Boolean, eff
     }
     val cloudTexture = ImageBitmap.imageResource(R.drawable.cloud_wisps)
     val layerPaint = remember { Paint() }
+    val smallClouds = remember {
+        val random = Random(1123)
+        List(8) { floatArrayOf(random.nextFloat(), .018f+random.nextFloat()*.115f,
+            .16f+random.nextFloat()*.15f, .006f+random.nextFloat()*.006f,
+            .65f+random.nextFloat()*.3f) }
+    }
     // Seeded independent coordinates avoid lattice-like rows and stay stable across frames.
     val stars = remember { val random = Random(74597); List(44) {
         floatArrayOf(.29f + random.nextFloat() * .67f, .012f + random.nextFloat() * .19f,
@@ -234,32 +239,35 @@ private fun WeatherOverlay(condition: String, night: Boolean, dusk: Boolean, eff
                 }
             }
         }
-        // Restore drifting cloud detail. A composited alpha mask fades it gradually
-        // above the irregular forest skyline instead of cutting it off at one y.
+        // Independent small cloud sprites move in one direction. Never redraw the
+        // photographed sky: blending a shifted copy caused ghosted original clouds.
         if(effects.clouds>0f) {
-            val skyBounds=Rect(0f,0f,w,h*.34f)
-            clipRect(0f,0f,w,h*.34f) {
+            val cover=effects.clouds.coerceIn(0f,1f)
+            val skyBounds=Rect(0f,0f,w,h*.25f)
+            clipRect(0f,0f,w,h*.25f) {
                 drawContext.canvas.saveLayer(skyBounds,layerPaint)
-                // The original cloud shapes move as well, rather than remaining
-                // stationary behind the added wisps. Only the feathered sky is redrawn.
-                if(!night) drawImage(sceneBitmap,
-                    dstOffset=IntOffset((w*.023f*sin(seconds*.16f)).toInt(),(h*.002f*sin(seconds*.11f)).toInt()),
-                    dstSize=IntSize(w.toInt(),h.toInt()),alpha=.92f)
-                repeat(if(lowMemory) 1 else 2) { layer ->
-                    val width=(w*(1.35f+layer*.2f)).toInt()
-                    val travel=sin(seconds*(.075f+layer*.018f)+layer*2f)
-                    val alpha=if(night) .09f*effects.clouds else
-                        (if(condition=="Sonnig") .18f+.34f*effects.clouds else .30f+.32f*effects.clouds)
-                    drawImage(cloudTexture,
-                        dstOffset=IntOffset((w*(-.22f+travel*.28f)).toInt(),(h*(-.025f+layer*.07f)).toInt()),
-                        dstSize=IntSize(width,(width.toFloat()*cloudTexture.height/cloudTexture.width).toInt()),
-                        alpha=alpha.coerceIn(0f,1f))
+                val count=(3+(cover*5).toInt()).coerceAtMost(if(lowMemory) 4 else 8)
+                repeat(count) { i ->
+                    val cloud=smallClouds[i]
+                    val span=1f+cloud[2]
+                    // Wrap only while the entire sprite is outside the image.
+                    val progress=(cloud[0]+seconds*cloud[3]/span)%1f
+                    val x=w*(-cloud[2]+progress*span)
+                    val width=(w*cloud[2]).toInt().coerceAtLeast(1)
+                    val opacity=(if(night) .10f*cover else .50f+.30f*cover)*cloud[4]
+                    translate(x,h*cloud[1]) {
+                        drawImage(cloudTexture,
+                            dstSize=IntSize(width,(width.toFloat()*cloudTexture.height/cloudTexture.width).toInt().coerceAtLeast(1)),
+                            alpha=opacity)
+                    }
                 }
-                drawRect(Brush.verticalGradient(0f to Color.White,.5f to Color.White,
-                    1f to Color.Transparent,startY=0f,endY=h*.31f),
+                // Fade around the foreground foliage and before the forest skyline.
+                drawRect(Brush.verticalGradient(0f to Color.White,.65f to Color.White,
+                    1f to Color.Transparent,startY=0f,endY=h*.25f),
                     size=skyBounds.size,blendMode=BlendMode.DstIn)
-                drawRect(Brush.horizontalGradient(0f to Color.Transparent,.27f to Color.White,
-                     .94f to Color.White,1f to Color.Transparent,startX=0f,endX=w),size=skyBounds.size,blendMode=BlendMode.DstIn)
+                drawRect(Brush.horizontalGradient(0f to Color.Transparent,.23f to Color.Transparent,
+                    .36f to Color.White,1f to Color.White,startX=0f,endX=w),
+                    size=skyBounds.size,blendMode=BlendMode.DstIn)
                 drawContext.canvas.restore()
             }
         }
