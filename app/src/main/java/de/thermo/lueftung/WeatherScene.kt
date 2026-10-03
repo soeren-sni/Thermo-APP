@@ -15,6 +15,9 @@ import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import java.time.LocalTime
 import androidx.compose.ui.graphics.Color
@@ -30,7 +33,6 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -111,17 +113,19 @@ fun AnimatedHouseScene(condition: String, modifier: Modifier = Modifier, animati
             else if(dusk && condition!="Nacht") drawRect(Color(0xFFEFAC75).copy(alpha=.12f))
             else if(condition=="Regen" || condition=="Gewitter") drawRect(Color(0xFFD5E8F5).copy(alpha=.06f))
         }
-        if (animationsEnabled && lifecycle == Lifecycle.State.RESUMED && visible) WeatherOverlay(condition, night, effects, sceneBitmap)
+        if (animationsEnabled && lifecycle == Lifecycle.State.RESUMED && visible) WeatherOverlay(condition, night, dusk, effects, sceneBitmap)
         }
     }
 }
 
 @Composable
-private fun WeatherOverlay(condition: String, night: Boolean, effects: WeatherEffects, sceneBitmap: ImageBitmap) {
+private fun WeatherOverlay(condition: String, night: Boolean, dusk: Boolean, effects: WeatherEffects, sceneBitmap: ImageBitmap) {
     val context = LocalContext.current
     val lowMemory = remember(context) {
         context.getSystemService(ActivityManager::class.java).isLowRamDevice
     }
+    val cloudTexture = ImageBitmap.imageResource(R.drawable.cloud_wisps)
+    val layerPaint = remember { Paint() }
     // Seeded independent coordinates avoid lattice-like rows and stay stable across frames.
     val stars = remember { val random = Random(74597); List(44) {
         floatArrayOf(.29f + random.nextFloat() * .67f, .012f + random.nextFloat() * .19f,
@@ -161,46 +165,103 @@ private fun WeatherOverlay(condition: String, night: Boolean, effects: WeatherEf
         val w = size.width
         val h = size.height
         val stroke = (w / 360f).coerceAtLeast(1f)
-        // Reflection highlights remain below the actual pond edge.
-        repeat(7) { i ->
-            val dx = sin(seconds * .4f + i) * w * .009f
-            val y = h * (.72f + i * .035f)
-            val color = if (night) Color(0xFFFFCA7C) else Color.White
-            val ripple = Path().apply {
-                moveTo(w * .25f + dx, y)
-                repeat(16) { j ->
-                    lineTo(w * (.25f + (j + 1) * .03f) + dx,
-                        y + sin(j * .7f + seconds * .9f + i) * h * .0017f)
+        // Move the photographed water/reflections themselves, within the pond only.
+        // The exposed water just above the glass cards is included in the mask.
+        val pond = Path().apply {
+            moveTo(w*.23f,h*.675f)
+            cubicTo(w*.36f,h*.65f,w*.52f,h*.662f,w*.68f,h*.687f)
+            lineTo(w*.98f,h*.684f); lineTo(w,h*.75f); lineTo(w,h*.95f)
+            cubicTo(w*.8f,h*.99f,w*.48f,h*.985f,w*.32f,h*.98f)
+            cubicTo(w*.25f,h*.94f,w*.22f,h*.83f,w*.17f,h*.75f)
+            close()
+        }
+        clipPath(pond) {
+            val bands=if(lowMemory) 30 else 48
+            repeat(bands) { i ->
+                val top=.65f+i*.35f/bands
+                val bottom=.65f+(i+1)*.35f/bands
+                val depth=(top-.65f)/.35f
+                val dx=w*(.003f+.003f*depth)*sin(seconds*1.15f+i*.42f)
+                val dy=h*.0012f*sin(seconds*.8f+i*.29f)
+                clipRect(top=h*top,bottom=h*bottom) {
+                    translate(dx,dy) { drawImage(sceneBitmap,dstSize=IntSize(w.toInt(),h.toInt())) }
                 }
             }
-            drawPath(ripple, color.copy(alpha = .065f +
-                .055f * (1f + sin(seconds * .7f + i))), style = Stroke(stroke))
+            if(night && condition!="Nacht" && condition!="Sonnig") drawRect(Color(0xFF03152E).copy(alpha=.48f))
+            else if(dusk && condition!="Nacht") drawRect(Color(0xFFEFAC75).copy(alpha=.12f))
+            // Short broken glints follow ripples, including the unobscured upper pond.
+            repeat(if(lowMemory) 20 else 36) { i ->
+                val y=h*(.67f+((i*.173f)%1f)*.30f)
+                val x=w*(.25f+((i*.618034f)%1f)*.74f)+w*.015f*sin(seconds*.7f+i)
+                val shimmer=(1f+sin(seconds*1.6f+i*1.91f))/2f
+                val color=if(night) Color(0xFFFFC56C) else Color(0xFFFFF0BE)
+                drawLine(color.copy(alpha=(if(night) .28f else .32f)*shimmer),
+                    Offset(x,y),Offset(x+w*(.018f+.018f*shimmer),y+h*.001f*sin(seconds+i)),
+                    stroke*(.65f+shimmer),cap=StrokeCap.Round)
+            }
+            if(night) repeat(3) { lamp ->
+                val x=w*(.3f+lamp*.28f)
+                repeat(10) { i ->
+                    val shimmer=(1f+sin(seconds*1.4f+i*.9f+lamp))/2f
+                    val y=h*(.675f+i*.028f)
+                    val shift=w*.012f*sin(seconds*.9f+i+lamp)
+                    drawLine(Color(0xFFFFBB55).copy(alpha=.08f+.18f*shimmer),
+                        Offset(x+shift-w*.018f,y),Offset(x+shift+w*.026f,y),stroke)
+                }
+            }
         }
         if(condition == "Sonnig" || condition == "Nacht") {
-            // Only small foliage patches sway; house, forest, framing and pond bitmap stay fixed.
             canopy.take(if(lowMemory) 4 else 7).forEachIndexed { i, point ->
                 val centre=Offset(w*point.first,h*point.second)
-                val mask=Path().apply { addOval(androidx.compose.ui.geometry.Rect(
-                    centre.x-w*.036f,centre.y-h*.024f,centre.x+w*.036f,centre.y+h*.024f)) }
-                clipPath(mask) {
-                    translate(w*.0025f*sin(seconds*.8f+i),h*.001f*sin(seconds*.65f+i)) {
-                        drawImage(sceneBitmap,dstSize=IntSize(w.toInt(),h.toInt()),alpha=.65f)
+                val radius=w*.065f
+                val bounds=Rect(centre.x-radius,centre.y-radius,centre.x+radius,centre.y+radius)
+                // Feather every patch so moving foliage has no oval cutout edge.
+                clipRect(bounds.left,bounds.top,bounds.right,bounds.bottom) {
+                    drawContext.canvas.saveLayer(bounds,layerPaint)
+                    translate(w*.007f*sin(seconds*.95f+i),h*.002f*sin(seconds*.7f+i)) {
+                        drawImage(sceneBitmap,dstSize=IntSize(w.toInt(),h.toInt()))
                     }
+                    if(dusk && condition!="Nacht") drawRect(Color(0xFFEFAC75).copy(alpha=.12f))
+                    drawRect(Brush.radialGradient(0f to Color.White,.5f to Color.White,
+                        1f to Color.Transparent,center=centre,radius=radius),
+                        topLeft=bounds.topLeft,size=bounds.size,blendMode=BlendMode.DstIn)
+                    drawContext.canvas.restore()
                 }
                 if(!night) {
-                    val glow=.025f+.065f*(1f+sin(seconds*.7f+i))/2f
-                    drawCircle(Brush.radialGradient(listOf(Color(0xFFFFE68A).copy(alpha=glow),Color.Transparent),centre,w*.065f),w*.065f,centre)
+                    val glint=Offset(centre.x+w*.02f*sin(seconds*.6f+i),centre.y+h*.006f*sin(seconds*.8f+i))
+                    val glow=.08f+.17f*(1f+sin(seconds*1.1f+i))/2f
+                    drawCircle(Brush.radialGradient(listOf(Color(0xFFFFE58B).copy(alpha=glow),Color.Transparent),glint,w*.055f),w*.055f,glint)
                 }
             }
         }
-        // Radial cloud wisps fade before the treetops: no horizontal clip at the forest edge.
-        if(effects.clouds>0f) repeat(if(lowMemory) 5 else 9) { i ->
-            val x=w*(.64f+.38f*sin(seconds*.035f+i*1.73f))
-            val y=h*(.065f+(i%3)*.055f)
-            val radius=w*(.12f+(i%3)*.04f)
-            val opacity=effects.clouds.coerceIn(0f,1f)*(if(night) .08f else .26f)*(if(condition=="Sonnig" || condition=="Nacht") sin(seconds*.16f+i).coerceAtLeast(0f) else .65f+.35f*sin(seconds*.22f+i))
-            val colour=if(night) Color(0xFF7794B5) else Color.White
-            drawCircle(Brush.radialGradient(listOf(colour.copy(alpha=opacity),Color.Transparent),Offset(x,y),radius),radius,Offset(x,y))
+        // Restore drifting cloud detail. A composited alpha mask fades it gradually
+        // above the irregular forest skyline instead of cutting it off at one y.
+        if(effects.clouds>0f) {
+            val skyBounds=Rect(0f,0f,w,h*.34f)
+            clipRect(0f,0f,w,h*.34f) {
+                drawContext.canvas.saveLayer(skyBounds,layerPaint)
+                // The original cloud shapes move as well, rather than remaining
+                // stationary behind the added wisps. Only the feathered sky is redrawn.
+                if(!night) drawImage(sceneBitmap,
+                    dstOffset=IntOffset((w*.023f*sin(seconds*.16f)).toInt(),(h*.002f*sin(seconds*.11f)).toInt()),
+                    dstSize=IntSize(w.toInt(),h.toInt()),alpha=.92f)
+                repeat(if(lowMemory) 1 else 2) { layer ->
+                    val width=(w*(1.35f+layer*.2f)).toInt()
+                    val travel=sin(seconds*(.075f+layer*.018f)+layer*2f)
+                    val alpha=if(night) .09f*effects.clouds else
+                        (if(condition=="Sonnig") .18f+.34f*effects.clouds else .30f+.32f*effects.clouds)
+                    drawImage(cloudTexture,
+                        dstOffset=IntOffset((w*(-.22f+travel*.28f)).toInt(),(h*(-.025f+layer*.07f)).toInt()),
+                        dstSize=IntSize(width,(width.toFloat()*cloudTexture.height/cloudTexture.width).toInt()),
+                        alpha=alpha.coerceIn(0f,1f))
+                }
+                drawRect(Brush.verticalGradient(0f to Color.White,.5f to Color.White,
+                    1f to Color.Transparent,startY=0f,endY=h*.31f),
+                    size=skyBounds.size,blendMode=BlendMode.DstIn)
+                drawRect(Brush.horizontalGradient(0f to Color.Transparent,.27f to Color.White,
+                     .94f to Color.White,1f to Color.Transparent,startX=0f,endX=w),size=skyBounds.size,blendMode=BlendMode.DstIn)
+                drawContext.canvas.restore()
+            }
         }
         if(!night && condition in listOf("Sonnig","Bewölkt")) {
             val centre=Offset(w*.67f,h*.27f)
@@ -215,17 +276,7 @@ private fun WeatherOverlay(condition: String, night: Boolean, effects: WeatherEf
             }
         }
         when (condition) {
-            "Sonnig" -> {
-                // Moving translucent light on the water/garden; no bitmap movement.
-                val x=w*(.35f+.12f*sin(seconds*.28f))
-                drawCircle(Brush.radialGradient(listOf(Color(0xFFFFE4A0).copy(alpha=.14f),Color.Transparent),
-                    center=Offset(x,h*.72f),radius=w*.36f),radius=w*.36f,center=Offset(x,h*.72f))
-                repeat(5) { i ->
-                    val y=h*(.74f+i*.036f)
-                    drawLine(Color(0xFFFFE9B6).copy(alpha=.15f+.1f*sin(seconds*1.2f+i)),
-                        Offset(x-w*.1f,y),Offset(x+w*.08f,y),stroke)
-                }
-            }
+            "Sonnig" -> Unit // Photographed reflections and glints move in the pond mask.
             "Bewölkt" -> Unit // Soft clouds and filtered sunlight are drawn below.
             "Regen", "Gewitter" -> {
                 repeat(effects.rainCount(lowMemory)) { i ->

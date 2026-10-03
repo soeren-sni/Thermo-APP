@@ -1,3 +1,7 @@
+Aktueller Prüfbericht: [V11.22 – Wolken, Wasser und Laub](docs/Pruefbericht_V11.22_Wolken-Wasser-Laub.md).
+
+Die folgenden Ergebnisse beschreiben den vorherigen V11.21-Stand.
+
 # Wetterüberarbeitung – 3. Oktober 2026
 
 Diese Prüfung beschreibt den aktuellen Stand auf `thermo-v11-20-test`.

@@ -1,4 +1,4 @@
-# Thermo Lüftung V11.21
+# Thermo Lüftung V11.22
 
 Weiterentwicklung des vorhandenen Android-Studio-Projekts aus
 `ThermoLueftungsApp_V11_19_Sechs_Wetter_Portrait_Richtig.zip`.
@@ -116,3 +116,25 @@ Unter **Geräte** vergleicht die App die drei getrennten Kellerräume und empfie
 - Internetberechtigung für HTTPS-Wetterabruf hinzugefügt. Die Cloud benötigt
   Zugriff auf `api.open-meteo.com`; ein gespeicherter Netzwerkentwurf allein
   schaltet den laufenden Cloud-Zugriff noch nicht frei.
+
+## V11.22 – Sichtbare Wolken-, Wasser- und Laubbewegung
+
+Der vorherige Stand bewegte vor allem schwache Lichtflächen; die meisten
+Wasserlinien lagen unter den Wetterkarten. V11.22 bewegt die Bildstruktur selbst:
+
+- Fotografierte Wolkenformen und zusätzliche Wolkentextur bei Sonnig, Bewölkt und Regen/Gewitter mit sichtbarem Zug;
+  vertikaler und seitlicher Alpha-Auslauf statt harter Waldkante.
+- Pond-Maske mit sanft gegeneinander verschobenen Bildstreifen; vorhandene
+  Wasser- und Lichtspiegelungen bewegen sich mit. Kurze wandernde Lichtglitzer
+  liegen auch auf dem frei sichtbaren Wasser oberhalb der Karten.
+- Weich maskierte Laubbereiche mit stärkerem Ausschlag und wandernden Sonnenreflexen.
+- Nacht mit bewegtem Wasser und warmen, gebrochenen Lampenreflexen;
+  die bisherige Sternverteilung bleibt erhalten.
+- Fester Bildausschnitt, statisches Haus, höchstens 30 Aktualisierungen/Sekunde;
+  reduzierte Streifen-/Laubzahl auf Low-RAM-Geräten. Animationen bleiben abschaltbar.
+
+Projektdatei: **Thermo-APP_V11.22_Wolken-Wasser-Laub.zip** im Ordner `downloads`.
+ZIP entpacken und den enthaltenen Projektordner in Android Studio öffnen.
+Downloads und Build-Ausgaben sind nicht in der Projekt-ZIP verschachtelt.
+Version in Gradle: 11.22, versionCode 28. Nur Projekt-ZIP bereitgestellt;
+keine separate APK für diesen Stand.
