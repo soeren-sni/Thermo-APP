@@ -1,3 +1,59 @@
+# Wetterüberarbeitung – 3. Oktober 2026
+
+Diese Prüfung beschreibt den aktuellen Stand auf `thermo-v11-20-test`.
+Die unten erhaltenen V11.21-Prüfungen sind historische Ergebnisse.
+
+- Cloud-Setup `tools/setup-cloud.sh` vollständig ausgeführt und erfolgreich;
+  Installation mit Prüfsummen/TLS-Verifikation, bestehender Checkout verwendet.
+- Abschließender Build: `assembleDebug`, `lintDebug`, `testDebugUnitTest`
+  erfolgreich. **22 Tests, null Fehler, null übersprungen.** Drei neue Wettertests
+  prüfen Wettercodes/Nacht, skalierte Niederschlagszahlen und Datenalter.
+- Lint: **null Fehler, 34 Warnungen**. Übernommene veraltete Icon-APIs bleiben.
+- Abschließende APK mit `apksigner verify --verbose` erfolgreich geprüft (v2).
+- API-28-Softwareemulator: erste Android-Systeminitialisierung zeigte System-UI-ANRs.
+  Nach dem Start gelang `adb install --no-streaming -r`; Streaming-Installation
+  lief ins Zeitlimit. App gestartet, Activity als resumed bestätigt, Startseite
+  und Einstellungen sichtbar. Kein App-Fehler im erfassten AndroidRuntime-Log.
+- Wetterort und **Demo · Wetterdaten fehlen** auf der Startseite sichtbar geprüft.
+  Vorhersage/Garten/Außenluft/Luftqualität und Lüftungsberatung als Demo markiert.
+  Manuelle Szenen zeigen **Demo · Wettertest**.
+- Alle sechs Szenen in den Einstellungen bei aktivierten Animationen mit
+  zeitversetzten Screenshots verglichen. Bildausschnitt und Hausgeometrie bleiben
+  fest. Bewegung im Szenenbereich bestätigt: Sonnig 8220, Bewölkt 3504, Regen 4942,
+  Gewitter 5760, Schnee 3749 und Nacht mit separat bestätigten Änderungen im
+  Himmel/Laub/Wasser. Gezählt wurden Pixel mit mehr als 3 RGB-Stufen Differenz in
+  einem 132 × 206-Pixel-Szenenausschnitt; dies ist **keine Bildratenmessung**.
+- Sonnig: Änderungen in Laub (515 Pixel) und Wasser (1826 Pixel). Nacht: Änderungen
+  in Himmel (669), Laub (352) und Wasser (335). Zusätzliche volle Nachtaufnahmen
+  zeigen unregelmäßig verteilte Sterne und lokale Laubbewegung.
+- Animationen ausgeschaltet: zwei zeitversetzte Vorschauaufnahmen sind im
+  Szenenausschnitt **pixelgleich**. Tageszeit und statisches Bild bleiben erhalten.
+- Screenshot-Artefakte dieser Cloud-Prüfung: `/workspace/thermo-validation`.
+
+## Verbleibende Grenzen
+
+Der echte Open-Meteo-Aufruf wurde vom Cloud-Proxy mit HTTP 403 blockiert. Die
+Domains `api.open-meteo.com` und `geocoding-api.open-meteo.com` wurden als
+Netzwerkentwurf gespeichert; ein gespeicherter Entwurf aktiviert den laufenden
+Zugriff nicht. Live-Antwortformat, echte Ortsdaten und Ende-zu-Ende-Aktualisierung
+sind deshalb noch nicht gegen den Wetterdienst geprüft. Die feste Ortskoordinate
+49,065° N / 10,145° E ist eine Näherung für Rechenberg und extern nicht verifiziert.
+Die App fällt sichtbar auf Demo zurück; manuelle Tests ersetzen keine Live-Prüfung.
+
+Die Zeichnung ist weiterhin auf höchstens 30 Aktualisierungen pro Sekunde
+begrenzt, pausiert bei unsichtbarer/inaktiver App und berücksichtigt systemweit
+reduzierte Bewegung. Partikelbudgets: 96 Regen / 160 Schnee; Low-RAM 40 / 64.
+Geräte-Bildrate, Akkuverbrauch und RAM unter Last müssen auf echter Hardware
+geprüft werden; Softwareemulation ohne KVM liefert hierzu keinen belastbaren Wert.
+Lampenflackern und Sonnenlichtmodulation sind implementiert; ihre vollständigen
+zeitlichen Abläufe wurden nicht in einer durchgehenden Videoaufnahme bewertet.
+
+Installationsskript und überprüfte Start-/Emulatoranweisungen wurden im
+Cloud-Konfigurationsentwurf gespeichert. Veröffentlichung bzw. Wiederherstellung
+in einer neuen Cloud-Aufgabe sind nicht bestätigt. `main` wird nicht aktualisiert.
+
+---
+
 # Prüfstand V11.21 – 3. Oktober 2026
 
 ## Bestätigt

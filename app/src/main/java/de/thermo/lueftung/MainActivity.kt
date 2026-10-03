@@ -104,7 +104,15 @@ class ThermoViewModel : ViewModel() {
     val wallTemperatures = mutableStateMapOf<String, WallTemperatureReading>()
     var page by mutableIntStateOf(0)
     var selectedRoom by mutableStateOf<Room?>(null)
-    var weather by mutableStateOf("Regen")
+    var weatherTest by mutableStateOf<String?>(null)
+    var weatherData by mutableStateOf<WeatherData?>(null)
+    val weather: String get() = weatherTest ?: weatherData?.condition ?: "Sonnig"
+    val weatherEffects get() = if(weatherTest != null) WeatherEffects.demo(weather) else weatherData?.effects ?: WeatherEffects.demo(weather)
+    val weatherSource get() = when {
+        weatherTest != null -> "Demo · Wettertest"
+        weatherData != null -> "Open-Meteo · Modellwetter"
+        else -> "Demo · Wetterdaten fehlen"
+    }
     var sceneHourOverride by mutableStateOf<Int?>(null)
     var weatherAnimations by mutableStateOf(true)
     var dehumidifierRoomId by mutableStateOf<String?>(null)
@@ -164,6 +172,14 @@ fun ThermoApp(vm: ThermoViewModel = viewModel()) {
             .getBoolean("weather_animations", true)
         vm.dehumidifierRoomId = context.getSharedPreferences("devices", Context.MODE_PRIVATE)
             .getString("dehumidifier_room", null)?.takeIf { it in setOf("fitness", "workshop", "laundry") }
+    }
+    LaunchedEffect(vm) {
+        while (true) {
+            try { vm.weatherData = WeatherRepository.fetch() }
+            catch (e: kotlinx.coroutines.CancellationException) { throw e }
+            catch (_: Exception) { if(vm.weatherData?.fresh() != true) vm.weatherData = null }
+            delay(900000)
+        }
     }
     LaunchedEffect(vm.timerRunning) {
         while (vm.timerRunning && vm.timerSeconds > 0) {
@@ -286,7 +302,7 @@ fun HomeScreen(vm: ThermoViewModel) {
             Modifier.fillMaxWidth().aspectRatio(1080f / 1800f)
                 .clip(RoundedCornerShape(bottomStart=28.dp,bottomEnd=28.dp))
         ) {
-            AnimatedHouseScene(vm.weather, Modifier.fillMaxSize(), vm.weatherAnimations, vm.sceneHourOverride)
+            AnimatedHouseScene(vm.weather, Modifier.fillMaxSize(), vm.weatherAnimations, vm.sceneHourOverride, vm.weatherEffects)
             Row(
                 Modifier.fillMaxWidth().padding(horizontal=12.dp, vertical=16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -294,18 +310,18 @@ fun HomeScreen(vm: ThermoViewModel) {
                 Icon(Icons.Filled.LocationOn, null, tint=Color.White, modifier=Modifier.size(20.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Mein Zuhause", color=Color.White, fontSize=22.sp, fontWeight=FontWeight.Bold)
-                    Text("Waldlichtung", color=TextSoft, fontSize=12.sp)
+                    Text(WeatherRepository.LOCATION, color=TextSoft, fontSize=12.sp)
                 }
                 IconButton(onClick={ vm.page=5 }) { Icon(Icons.Filled.Settings,null,tint=Color.White) }
             }
-            WeatherGlassCard(vm.weather, Modifier.align(Alignment.TopEnd).padding(top=60.dp,end=12.dp))
+            WeatherGlassCard(vm, Modifier.align(Alignment.TopEnd).padding(top=60.dp,end=12.dp))
             Row(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp),
                 horizontalArrangement=Arrangement.spacedBy(8.dp)
             ) {
-                SmallGlass("Garten","17,9 °C","72 % RH",Good,Modifier.weight(1f))
-                SmallGlass("Außenluft","12,0 °C","86 % RH",Cyan,Modifier.weight(1f))
-                SmallGlass("Luftqualität","AQI 28","Gut",Good,Modifier.weight(1f))
+                SmallGlass("Garten · Demo","17,9 °C","72 % RH",Good,Modifier.weight(1f))
+                SmallGlass("Außenluft · Demo","12,0 °C","86 % RH",Cyan,Modifier.weight(1f))
+                SmallGlass("Luftqualität · Demo","AQI 28","Gut",Good,Modifier.weight(1f))
             }
             GlassCard(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(start=16.dp,end=16.dp,bottom=116.dp).clickable { vm.page=1 },
@@ -316,7 +332,7 @@ fun HomeScreen(vm: ThermoViewModel) {
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Lüften nach Raum prüfen",color=Color.White,fontWeight=FontWeight.Bold)
-                        Text("Außenluft · 12,0 °C · 86 % RH",color=TextSoft,fontSize=10.sp)
+                        Text("Außenluft · Demo · 12,0 °C · 86 % RH",color=TextSoft,fontSize=10.sp)
                     }
                     Icon(Icons.Filled.ChevronRight,null,tint=Color.White)
                 }
@@ -326,7 +342,7 @@ fun HomeScreen(vm: ThermoViewModel) {
             Modifier.fillMaxWidth().padding(horizontal=12.dp, vertical=4.dp),
             alpha=.74f, padding=PaddingValues(horizontal=14.dp, vertical=8.dp)
         ) {
-            Text("Wettervorhersage",color=Color.White,fontSize=16.sp,lineHeight=20.sp,fontWeight=FontWeight.Bold)
+            Text("Wettervorhersage · Demo",color=Color.White,fontSize=16.sp,lineHeight=20.sp,fontWeight=FontWeight.Bold)
             Spacer(Modifier.height(3.dp))
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
                 listOf(Triple("11:00","Sonnig","18°"),Triple("12:00","Sonnig","20°"),Triple("13:00","Bewölkt","21°"),Triple("14:00","Regen","19°"),Triple("15:00","Regen","17°")).forEach {
@@ -350,20 +366,24 @@ fun HomeScreen(vm: ThermoViewModel) {
 }
 
 @Composable
-fun WeatherGlassCard(condition: String, modifier: Modifier) {
+fun WeatherGlassCard(vm: ThermoViewModel, modifier: Modifier) {
+    val condition = vm.weather
+    val data = vm.weatherData.takeIf { vm.weatherTest == null }
+    fun value(number: Float) = String.format(java.util.Locale.GERMAN, "%.1f", number)
     GlassCard(modifier.width(160.dp),alpha=.64f,padding=PaddingValues(14.dp)) {
         Row(verticalAlignment=Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text("AUSSENWETTER",color=TextSoft,fontSize=9.sp)
-                Text("12,0°C",color=Color.White,fontSize=30.sp)
+                Text("${value(data?.temperature ?: 12f)}°C",color=Color.White,fontSize=30.sp)
                 Text(condition,color=Color.White,fontSize=15.sp,fontWeight=FontWeight.Bold)
             }
             WeatherConditionIcon(condition, Modifier.size(32.dp))
         }
+        Text(vm.weatherSource,color=TextSoft,fontSize=9.sp)
         Spacer(Modifier.height(8.dp))
-        Text("Außenfeuchte    86 %",color=Color.White,fontSize=10.sp)
-        Text("Taupunkt        9,7 °C",color=TextSoft,fontSize=10.sp)
-        Text("Abs. Feuchte    9,2 g/m³",color=TextSoft,fontSize=10.sp)
+        Text("Außenfeuchte    ${data?.humidity ?: 86} %",color=Color.White,fontSize=10.sp)
+        Text("Taupunkt        ${value(ClimateMath.dewPoint((data?.temperature ?: 12f).toDouble(), (data?.humidity ?: 86).toDouble())?.toFloat() ?: 9.7f)} °C",color=TextSoft,fontSize=10.sp)
+        Text("Abs. Feuchte    ${value(ClimateMath.absoluteHumidity((data?.temperature ?: 12f).toDouble(), (data?.humidity ?: 86).toDouble()).toFloat())} g/m³",color=TextSoft,fontSize=10.sp)
     }
 }
 
@@ -762,6 +782,8 @@ fun SettingsScreen(vm:ThermoViewModel) {
         }
         Text("Licht: Auto nach Geräte-Uhrzeit · sonst Testansicht",color=TextSoft,fontSize=10.sp,modifier=Modifier.padding(horizontal=14.dp))
         Text("Wetter-Szenen testen",color=Color.White,fontWeight=FontWeight.Bold,modifier=Modifier.padding(horizontal=14.dp))
+        Text(vm.weatherSource,color=TextSoft,fontSize=10.sp,modifier=Modifier.padding(horizontal=14.dp))
+        TextButton(onClick={vm.weatherTest=null}) { Text("Aktuelles Wetter verwenden",color=Cyan) }
         Text("Die Szene auf der Startseite reagiert sofort.",color=TextSoft,fontSize=10.sp,modifier=Modifier.padding(horizontal=14.dp))
         Spacer(Modifier.height(6.dp))
         Column(Modifier.fillMaxWidth().padding(horizontal=12.dp)) {
@@ -773,7 +795,7 @@ fun SettingsScreen(vm:ThermoViewModel) {
                             Modifier.weight(1f).clip(RoundedCornerShape(22.dp))
                                 .background(if(active) Cyan else Color.Transparent)
                                 .border(1.dp,if(active) Cyan else Color.White.copy(alpha=.55f),RoundedCornerShape(22.dp))
-                                .clickable { vm.weather=scene }.padding(vertical=10.dp),
+                                .clickable { vm.weatherTest=scene }.padding(vertical=10.dp),
                             contentAlignment=Alignment.Center
                         ) {
                             Text(scene,color=if(active) Navy else Color.White,fontSize=10.sp,
@@ -789,7 +811,7 @@ fun SettingsScreen(vm:ThermoViewModel) {
             alpha=.55f,padding=PaddingValues(0.dp)
         ) {
             Box(Modifier.width(132.dp).align(Alignment.CenterHorizontally).aspectRatio(3f / 5f).clip(RoundedCornerShape(14.dp))) {
-                AnimatedHouseScene(vm.weather,Modifier.fillMaxSize(),vm.weatherAnimations,vm.sceneHourOverride)
+                AnimatedHouseScene(vm.weather,Modifier.fillMaxSize(),vm.weatherAnimations,vm.sceneHourOverride,vm.weatherEffects)
                 Text(
                     "Vorschau: ${vm.weather}",color=Color.White,fontWeight=FontWeight.Bold,fontSize=9.sp,lineHeight=12.sp,
                     modifier=Modifier.align(Alignment.BottomStart).padding(10.dp)

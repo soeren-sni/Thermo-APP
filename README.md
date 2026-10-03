@@ -16,15 +16,18 @@ Weiterentwicklung des vorhandenen Android-Studio-Projekts aus
   Wolkentextur, Regen mit Tiefenstaffelung und Teichringen, seltene Gewitterblitze,
   taumelnder Schnee und dezente nächtliche Reflexionen/Sternschnuppe.
 - Die Animation zeichnet mit maximal 30 Bildern pro Sekunde innerhalb der Canvas, pausiert außerhalb des sichtbaren
-  Bereichs sowie bei nicht aktiver App und verwendet höchstens 72 Regenpartikel
-  bzw. 48 Schneeflocken; auf Low-RAM-Geräten 32 Regenpartikel bzw. 28 Schneeflocken. Wetteranimationen lassen sich in den Einstellungen abschalten. Gewitterblitze folgen zufällig nach 6–14 Sekunden.
+  Bereichs sowie bei nicht aktiver App und verwendet höchstens 96 Regenpartikel
+  bzw. 160 Schneeflocken; auf Low-RAM-Geräten höchstens 40 Regenpartikel bzw. 64 Schneeflocken. Wetteranimationen lassen sich in den Einstellungen abschalten. Gewitterblitze folgen zufällig nach 6–14 Sekunden.
 - Die 13 Räume und die vorhandenen Stockwerkbilder sind erhalten. Die Raumliste lädt Einträge bedarfsgerecht über `LazyColumn`.
 - Eigene Raumbilder werden in Übersicht, Raumdetail und Einstellungen angezeigt.
   Dokumentzugriffe bleiben gespeichert; Bilder werden im Hintergrund verkleinert
   geladen, Fotoorientierung berücksichtigt und bei fehlendem Zugriff durch das
   Standardbild ersetzt. **Demo-Bild** setzt die Auswahl zurück.
 
-**Messwerte, Vorhersage, Gerätezustände und Automationsanzeigen bleiben Demo-Daten.**
+**Raummesswerte, Vorhersage, Gartenwerte, Luftqualität, Lüftungsberatung,
+Gerätezustände und Automationsanzeigen bleiben Demo-Daten.** Das aktuelle Wetter
+wird separat aus Open-Meteo-Modellwerten abgerufen und als solches gekennzeichnet.
+Ohne aktuelle Daten steht ausdrücklich „Demo · Wetterdaten fehlen“ in der Wetterkarte.
 Tuya, echte Fensterkontakte, Gerätebefehle und automatische Lüftungs-/Heizungslogik
 sind noch nicht integriert.
 
@@ -89,3 +92,27 @@ Unter **Geräte** vergleicht die App die drei getrennten Kellerräume und empfie
 - Einstellungen zeigen eine vollständige, kompakte animierte Hochformat-Vorschau
   vor den Temperaturzielen. Auto/Mittag/Abend/Nacht erlauben den Lichtvergleich.
 - Der Animationsschalter und die systemweite Bewegungsreduzierung bleiben wirksam.
+
+## Wetterüberarbeitung auf dem Testbranch
+
+- Wetterort: **74597 Stimpfach, Ortsteil Rechenberg**; näherungsweise Ortskoordinate
+  49,065° N / 10,145° E. Open-Meteo liefert Raster-/Modellwerte, keine lokale
+  Stationsmessung. Die genaue Ortskoordinate wurde in dieser Cloud nicht extern verifiziert.
+- Aktuelles Wetter wird beim Start und alle 15 Minuten im Hintergrund geladen.
+  Daten über 90 Minuten alt oder über 5 Minuten in der Zukunft werden verworfen.
+  Ohne nutzbare Daten verwendet die Szene gekennzeichnetes Demo-Wetter.
+- Regen einschließlich Schauern (mm), Schneefall (cm) und Wolkendecke (%) steuern
+  Partikelzahl und Wolkenopazität mit begrenztem Aufwand. Null Niederschlag zeichnet
+  keine Niederschlagspartikel. WMO-Wettercodes wählen die passende Grundszene.
+- Einstellungen: manuelle Auswahl ist „Demo · Wettertest“; **Aktuelles Wetter
+  verwenden** beendet den Testmodus. Tageszeit bleibt separat prüfbar; Auto verwendet
+  die Uhrzeit in Europe/Berlin.
+- Wolken laufen weich aus; keine rechteckige Kante am Wald. Gelegentliche
+  Schleierwolken und pulsierendes, gefiltertes Sonnenlicht ergänzen die Szene.
+- Kleine Laubbereiche bewegen sich lokal, Sonnenreflexe wandern im Laub,
+  Teichreflexe sind deutlicher. Haus und Bildausschnitt bleiben fest.
+- Nacht: sanftes Lampenflackern, unabhängig zufällig verteilte Sterne mit
+  sichtbarem Funkeln. Dichterer, nach Niederschlagsdaten skalierter Schnee.
+- Internetberechtigung für HTTPS-Wetterabruf hinzugefügt. Die Cloud benötigt
+  Zugriff auf `api.open-meteo.com`; ein gespeicherter Netzwerkentwurf allein
+  schaltet den laufenden Cloud-Zugriff noch nicht frei.
