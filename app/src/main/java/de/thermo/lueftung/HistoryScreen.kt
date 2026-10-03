@@ -98,7 +98,7 @@ fun HistoryScreen(vm:ThermoViewModel) {
                 Text("${historyDate(data.start)} – ${historyDate(data.end)}",color=Color.White.copy(alpha=.72f),fontSize=10.sp,modifier=Modifier.padding(vertical=8.dp))
                 if(data.demo) Text("Enthält Demo-/Testdaten",color=Color(0xFFFFD34D),fontSize=11.sp)
                 HistoryPlot(data,period)
-                Button(onClick={pendingExport=data;export.launch("Thermo_V11.25_Historie_${data.roomId}_${historyDate(data.start,"yyyyMMdd-HHmm")}_${historyDate(data.end,"yyyyMMdd-HHmm")}${if(data.demo) "_DEMO" else ""}.xlsx")},enabled=!exporting && metrics.isNotEmpty() && (data.samples.isNotEmpty() || data.events.isNotEmpty()),modifier=Modifier.fillMaxWidth()) {
+                Button(onClick={pendingExport=data;export.launch("Thermo_V11.26_Historie_${data.roomId}_${historyDate(data.start,"yyyyMMdd-HHmm")}_${historyDate(data.end,"yyyyMMdd-HHmm")}${if(data.demo) "_DEMO" else ""}.xlsx")},enabled=!exporting && metrics.isNotEmpty() && (data.samples.isNotEmpty() || data.events.isNotEmpty()),modifier=Modifier.fillMaxWidth()) {
                     Text(if(exporting) "Export läuft …" else "Auswahl als Excel mit Diagramm")
                 }
                 Text(feedback,color=Color.White,fontSize=11.sp)

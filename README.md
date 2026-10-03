@@ -1,10 +1,28 @@
-# Thermo Lüftung V11.25
+# Thermo Lüftung V11.26
 
 Android-Studio-Projekt auf **thermo-v11-20-test**. `main` bleibt unverändert.
-Aktuelle Projektdatei: **Thermo-APP_V11.25_Historie-Excel-Timer-Raumampel.zip**.
-[Projektdateien auf GitHub](downloads/README.md) · [Prüfbericht](docs/Pruefbericht_V11.25_Historie-Excel-Timer-Raumampel.md)
+Aktuelle Projektdatei: **Thermo-APP_V11.26_Tuya-Lokal-Blauer-Himmel.zip**.
+[Projektdateien auf GitHub](downloads/README.md) · [Prüfbericht](docs/Pruefbericht_V11.26_Tuya-Lokal-Blauer-Himmel.md)
 
-## Neu in V11.25
+## Neu in V11.26
+
+- Lesende Tuya-Integration über privaten Backend-Dienst; Access Secret bleibt außerhalb der APK.
+- Optionaler lokaler Home-Assistant-Datenweg ohne Tuya-IoT-Core-Abo bei lokal unterstützten Geräten.
+- Geräte → Einrichtung und Diagnose, bewusste DEMO/LIVE-Umschaltung, letzte Werte und Fehlerstatus.
+- Alle 47 übermittelten Geräte zugeordnet, noch **nicht durch echte API-Antworten verifiziert**.
+- [Einrichtung](backend/README.md) · [Architektur und offene Punkte](docs/Architektur_V11.26_Tuya-Lokal.md) · [Mapping-Tabelle](docs/Tuya_Geraetemapping_V11.26.csv)
+
+
+Das Sonnenbild hat einen blauen, wolkenfreien Grundhimmel. Die fest eingebrannten
+Wolken und ihre weißen Teichspiegelungen wurden aus diesem Bild entfernt.
+**Die bereits vorbeiziehenden weißen Wolken sind unverändert**: gleiche Textur,
+Farbe, Form, Zahl und Geschwindigkeit wie zuvor. Sie ziehen weiterhin einseitig
+vorbei. Die übrigen Wetterszenen und der Animationscode sind unverändert.
+
+Das Bild bleibt 864 × 1440 Pixel; Bildausschnitt und Partikelbudgets bleiben fest.
+Exportdateien verwenden jetzt V11.26 im Namen. Alle Funktionen aus V11.25 sind enthalten.
+
+## Enthalten aus V11.25
 
 - Eigenes fotografisches Standardbild für das Bad; eigene Raumbilder bleiben möglich.
 - Historie mit vollständiger Raumauswahl, Tag/Woche/Monat/Jahr und unabhängig
@@ -23,7 +41,7 @@ Aktuelle Projektdatei: **Thermo-APP_V11.25_Historie-Excel-Timer-Raumampel.zip**.
 - Gemeinsamer Ereigniseingang für Fenster-/Türkontakte und Heizungszustände:
   erstes geöffnetes Fenster startet, weitere Fenster starten nicht neu; das letzte
   geschlossene Fenster beendet den Timer. Eine geöffnete Tür begrenzt die Restzeit
-  bei Querlüftung auf maximal zwei Minuten. Automatik ist bislang nur als Demo testbar.
+  bei Querlüftung auf maximal zwei Minuten. Automatik ist ohne geprüfte Geräte bislang nur als Demo testbar.
 - Lokale Android-Klimabenachrichtigungen bei frischen echten Werten: mindestens
   70 % RH, zu kalter Raum (17 °C, Keller 14 °C), aktuell günstige Trocknung ab 60 % RH.
   Nur mit passenden Außen-/Kellerwandwerten wird Lüftung empfohlen. Wiederholungen
@@ -41,7 +59,7 @@ sowie die Raumampel und ihre Legende oberhalb der Stockwerkregister.
 3. Modul `app` im Emulator starten (Android 8.0/API 26 oder neuer).
 
 Gradle 8.9 mit offiziellem SHA-256-Prüfwert, AGP 8.7.3, Kotlin 2.0.21,
-Compose BOM 2024.12.01. App-Version **11.25**, versionCode **31**.
+Compose BOM 2024.12.01. App-Version **11.26**, versionCode **32**.
 
 ```sh
 ./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest
@@ -83,11 +101,12 @@ im Raum „Bühne (Kinderzimmer 2)“ und spielt nach einer Minute den Alarmton 
 
 ## Grenzen echter Sensoren und Benachrichtigungen
 
-**Tuya/Smart Life, Midea, Home Assistant, MQTT und echte Fensterkontakte sind noch
-nicht verbunden.** Die konkrete Schnittstelle und Gerätezuordnung fehlen.
+**Midea und MQTT sind noch
+nicht verbunden.** Die Tuya-/Home-Assistant-Adapter sind implementiert, aber echte
+Geräte und DP-Schemas müssen noch über die Diagnose geprüft werden.
 Ein vertrauenswürdiger Adapter kann kohärente Klimawerte an `ThermoRuntime.climate`
-und Kontakt-/Heizungsereignisse an `ThermoRuntime.sensorEvent` liefern. Ein bloßer
-Ereigniseingang ist noch keine laufende Geräteintegration. Es gibt keine echte
+und Kontakt-/Heizungsereignisse an `ThermoRuntime.sensorEvent` liefern. Die neue Leseschicht liefert nach aktiver Verbindung verifizierte Daten; ohne
+Konfiguration bleibt DEMO aktiv. Es gibt keine echte
 Heizungs- oder Entfeuchtersteuerung; „Läuft“ ist eine manuelle Betriebsmeldung.
 
 Benachrichtigungen werden **lokal auf Android** erzeugt, nicht von einem eingerichteten
@@ -122,8 +141,8 @@ die genaue Ortskoordinate und Live-Antwort wurden hier nicht extern verifiziert.
 Die unscharfe verschobene Kopie des fotografierten Himmels wurde entfernt.
 Der Originalhimmel bleibt scharf; einzelne kleine Wolken ziehen mit unterschiedlichen
 Abständen, Größen und Geschwindigkeiten gleichmäßig von links nach rechts. Sie
-wechseln erst außerhalb des Bildes auf die andere Seite. Die fotografierten
-Grundwolken bleiben Bestandteil des festen Bildes. Keine Richtungsumkehr im Bild.
+wechseln erst außerhalb des Bildes auf die andere Seite. Im Sonnenbild ist der
+Grundhimmel jetzt wolkenfrei; nur die zusätzlichen weißen Wolken ziehen vorbei. Keine Richtungsumkehr im Bild.
 Weiche Masken vermeiden die Wolkenkante am Wald und über Vordergrundblättern.
 
 Teichstreifen, Wasserreflexe, Laubbereiche und Sonnenreflexe bewegen sich lokal;

@@ -1,0 +1,6 @@
+# Beispiel für privates LAN. DNS-Namen im eigenen Router auf Backend-Host auflösen.
+# Caddy separat installieren; keine Router-Portfreigabe erforderlich.
+https://thermo.home.arpa {
+    tls internal
+    reverse_proxy 127.0.0.1:8787
+}

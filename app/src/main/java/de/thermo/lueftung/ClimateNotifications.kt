@@ -26,7 +26,8 @@ object ClimateNotifications {
         val room=allThermoRooms().firstOrNull { it.id==roomId } ?: return
         val weather=outside?.takeIf { it.fresh() }
         val wallT=wall?.takeIf { now-it.measuredAtMillis in 0..DehumidifierRecommendation.MAX_AGE_MILLIS }?.temperatureC
-        val canDry=weather?.let { VentilationPlanner.plan(reading.temperatureC.toDouble(),reading.relativeHumidityPercent.toDouble(),it.temperature.toDouble(),it.humidity.toDouble(),room.floor=="Keller",wallT).canVentilate }
+        val outdoor=ThermoRuntime.outdoorClimate.value?.takeIf { TuyaPolicy.fresh(it.measuredAtMillis,now) }
+        val canDry=if(outdoor!=null) VentilationPlanner.plan(reading.temperatureC.toDouble(),reading.relativeHumidityPercent.toDouble(),outdoor.temperatureC.toDouble(),outdoor.relativeHumidityPercent.toDouble(),room.floor=="Keller",wallT).canVentilate else weather?.let { VentilationPlanner.plan(reading.temperatureC.toDouble(),reading.relativeHumidityPercent.toDouble(),it.temperature.toDouble(),it.humidity.toDouble(),room.floor=="Keller",wallT).canVentilate }
         val prefs=context.getSharedPreferences("alerts",Context.MODE_PRIVATE)
         val messages=ClimateAlertPolicy.messages(reading.temperatureC.toDouble(),reading.relativeHumidityPercent.toDouble(),room.floor=="Keller",canDry)
         val keys=setOf("cold","humidity","opportunity")

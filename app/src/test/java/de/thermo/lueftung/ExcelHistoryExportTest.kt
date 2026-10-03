@@ -34,7 +34,7 @@ class ExcelHistoryExportTest {
         assertTrue(data.getValue("xl/worksheets/sheet3.xml").contains("Noch offen"))
     }
     @Test fun fixtureForIndependentSpreadsheetReader() {
-        val file=File("build/validation/Thermo_V11.25_Bad_DEMO.xlsx");file.parentFile!!.mkdirs()
+        val file=File("build/validation/Thermo_V11.26_Bad_DEMO.xlsx");file.parentFile!!.mkdirs()
         file.outputStream().use { ExcelHistoryExport.write(selection(),it) };assertTrue(file.length()>1000)
     }
 }

@@ -37,7 +37,7 @@ class RoomClimateStore(private val onAccepted: ((String, RoomClimateReading) -> 
             accepted=false
             val previous = current[roomId]
             // A delayed packet must not overwrite a newer measurement.
-            if (previous != null && previous.measuredAtMillis >= snapshot.measuredAtMillis) current
+            if (previous != null && previous.measuredAtMillis >= snapshot.measuredAtMillis && !(previous.isDemo && !snapshot.isDemo)) current
             else { accepted=true; current + (roomId to snapshot) }
         }
         if(accepted) onAccepted?.invoke(roomId,snapshot)

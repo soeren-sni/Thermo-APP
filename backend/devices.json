@@ -1,0 +1,425 @@
+[
+  {
+    "id": "bf710ee9b6d22ac731mj0o",
+    "name": "T & H Sensor Aussen",
+    "room": "outside",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf6b1a4c84535fba5cdvkm",
+    "name": "T & H Sensor Werkstatt",
+    "room": "workshop",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf36bcf269d4f4482ccq26",
+    "name": "T & H Sensor Wäsche",
+    "room": "laundry",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf01bb78efe5d175c8sld6",
+    "name": "T & H Hobbyraum",
+    "room": "fitness",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf7b043fb8e82db44eaqy7",
+    "name": "T & H Kinderzimmer",
+    "room": "child1",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfb8617e1a6de43139jfhj",
+    "name": "T & H Küche",
+    "room": "kitchen",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf93223c0300e92d8e2t9a",
+    "name": "T & H Büro",
+    "room": "office",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf59edf22a96f82677ussn",
+    "name": "T & H Badezimmer",
+    "room": "bath",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf111baa9a4287f18dq0sl",
+    "name": "T & H Schlafzimmer",
+    "room": "bedroom",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfe826289bece5c16am37u",
+    "name": "T & H Wohnzimmer",
+    "room": "living",
+    "role": "climate",
+    "expectedProduct": "001ZTHA1",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bff0868b069298af1axdku",
+    "name": "Wohnzimmer Fenster rechts",
+    "room": "living",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf358d8838a8e22d6fhsze",
+    "name": "Haustüre",
+    "room": "entrance",
+    "role": "door",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf56a80af7d465a53atulg",
+    "name": "Fenster WC",
+    "room": "wc",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfcc9c19204bba00d7qkrr",
+    "name": "Bühne Fenster",
+    "room": "child2",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf8979881fe47631a6pgts",
+    "name": "Kinderzimmer Fenster",
+    "room": "child1",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfd2e5e94dfd9f2bfaI85g",
+    "name": "Abstellraum Fenster",
+    "room": "pantry",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": true,
+    "verified": false
+  },
+  {
+    "id": "bf8689bf7cce5d2ff7p7ws",
+    "name": "Küchen Fenster rechts",
+    "room": "kitchen",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf7d463184c9e82838wo4o",
+    "name": "Bad Fenster",
+    "room": "bath",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf37908d868c548728lv0k",
+    "name": "Büro Fenster Haustüre",
+    "room": "office",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfd930a808c5e8c630flrs",
+    "name": "Büro Fenster PC",
+    "room": "office",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf0def40886811dc1d8zxi",
+    "name": "Schlafzimmer Fenster rechts",
+    "room": "bedroom",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf477638466db9aadfnzvn",
+    "name": "Schlafzimmer Fenster Bett",
+    "room": "bedroom",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf0ccb523fb2bc3b8abazj",
+    "name": "Fenster 1 Wohnzimmer",
+    "room": "living",
+    "role": "window",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfc946a53feab9aa100bry",
+    "name": "Kinderzimmer Heizung 1",
+    "room": "child1",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfb10498a9c4e999a8gjlp",
+    "name": "Kinderzimmer Heizung 2",
+    "room": "child1",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf469b4f4a4d95b0c0v4rl",
+    "name": "Schlafzimmer Heizung 1",
+    "room": "bedroom",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf5a0f0fed7b70a6503mwd",
+    "name": "Schlafzimmer Heizung 2",
+    "room": "bedroom",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf5e01900e3ff042d7jpro",
+    "name": "Wohnzimmer Heizung 1",
+    "room": "living",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf7bf1fe66e57d32adcww7",
+    "name": "Wohnzimmer Heizung 2",
+    "room": "living",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf5635f933b3f02745twqf",
+    "name": "Büro Heizung 1",
+    "room": "office",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf6aa447f8fc6561eachr5",
+    "name": "Heizung Küche 1",
+    "room": "kitchen",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf550b29fc89ea26efmbop",
+    "name": "Heizung Küche 2",
+    "room": "kitchen",
+    "role": "heater",
+    "expectedProduct": "HY18-NEW",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfa1a9a1039120901e43ka",
+    "name": "Hobby Keller 600W Heizung",
+    "room": "fitness",
+    "role": "heater",
+    "expectedProduct": "Metal Panel Heater",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfa0b82890a9266a75wd0q",
+    "name": "CO Sensor Kinderzimmer",
+    "room": "child1",
+    "role": "co",
+    "expectedProduct": "CO报警器",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfae72d5fcffe88c0bysga",
+    "name": "CO Sensor Schlafzimmer",
+    "room": "bedroom",
+    "role": "co",
+    "expectedProduct": "CO报警器",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfe2b4105bb66c47d38kfz",
+    "name": "CO Sensor Wohnzimmer",
+    "room": "living",
+    "role": "co",
+    "expectedProduct": "CO报警器",
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf4750a725e1289d00bxab",
+    "name": "Ventilator Keller",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfe4dbc61bff08a7c3wxf8",
+    "name": "Repeater Flur",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf8cdc58db32ce87a41ilg",
+    "name": "großer Kühlschrank Steckdose",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf57a8b309b55fbca6qjzf",
+    "name": "PC Steckdose",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bfc6471541c08dac96etjh",
+    "name": "Heizung Bad",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf7a1efe3d4f26b881n8rf",
+    "name": "Intelligente Türklingel",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf46241c604c4a42253lsb",
+    "name": "intelligente Steckdosenleiste",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bffcd7e0ad6c74b2dfh85p",
+    "name": "ZigBee repeater 2",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf45f496b53ed146b2l3h7",
+    "name": "ZigBee repeater",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf432d09970d96992ccqk5",
+    "name": "Smart Control Panel",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  },
+  {
+    "id": "bf27f83aaeb623e2cb4d2o",
+    "name": "Mini Multi-Mode Gateway",
+    "room": null,
+    "role": "diagnostic",
+    "expectedProduct": null,
+    "ambiguous": false,
+    "verified": false
+  }
+]

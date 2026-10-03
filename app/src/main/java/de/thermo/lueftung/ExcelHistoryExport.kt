@@ -39,7 +39,7 @@ object ExcelHistoryExport {
     fun write(data:HistorySelection,output:OutputStream) {
         require(data.metrics.isNotEmpty())
         val metrics=data.metrics.sortedBy { it.ordinal }
-        val overview=listOf(listOf("Thermo V11.25 · ${data.roomName}",if(data.demo) "DEMO / Testdaten enthalten" else "Aufzeichnung"),
+        val overview=listOf(listOf("Thermo V11.26 · ${data.roomName}",if(data.demo) "DEMO / Testdaten enthalten" else "Aufzeichnung"),
             listOf("Zeitraum",human(data.start),human(data.end)),listOf("Auswahl",metrics.joinToString { "${it.label} (${it.unit})" }),
             listOf("Zeitbasis","Europe/Berlin; UTC-Zeit zusätzlich in Messwerten"),listOf("Lüftungsmarker","Start/Ende: Ereignismessung oder nächster Messwert (max. 15 Min Abstand). Fehlende Werte bleiben leer."),
             listOf("Hinweis","Erfasste Ereignisse belegen nur ihre angegebene Quelle; keine rückwirkend erfundenen Sensorwerte."))

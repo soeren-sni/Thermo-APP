@@ -4,3 +4,11 @@
 local.properties
 *.iml
 .idea/
+
+# Private backend configuration and runtime caches
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+backend/private/

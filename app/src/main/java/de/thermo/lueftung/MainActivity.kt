@@ -7,6 +7,7 @@ import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import android.content.Context
 import android.net.Uri
@@ -113,6 +114,7 @@ fun dehumidifierLocationName(id: String?): String = rooms.firstOrNull { it.id==i
 
 class ThermoViewModel(application: Application) : AndroidViewModel(application) {
     val climate = ThermoRuntime.climate
+    val tuya = ThermoRuntime.tuya
     val wallTemperatures = mutableStateMapOf<String, WallTemperatureReading>()
     var page by mutableIntStateOf(0)
     var selectedRoom by mutableStateOf<Room?>(null)
@@ -224,6 +226,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ThermoApp(vm: ThermoViewModel = viewModel()) {
     val context = LocalContext.current
+    val lifecycleOwner=androidx.lifecycle.compose.LocalLifecycleOwner.current
+    LaunchedEffect(vm,lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            while(true) { if(vm.tuya.source.value==ClimateSource.TUYA_LIVE) vm.tuya.refresh();delay(300000) }
+        }
+    }
     LaunchedEffect(vm) {
         vm.weatherAnimations = context.getSharedPreferences("display", Context.MODE_PRIVATE)
             .getBoolean("weather_animations", true)
@@ -351,6 +359,7 @@ fun BottomNav(active: Int, vm: ThermoViewModel) {
 
 @Composable
 fun HomeScreen(vm: ThermoViewModel) {
+    val outside=liveOutdoor(vm)
     Column(Modifier.fillMaxSize().background(Navy).safeDrawingPadding()) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
         Box(
@@ -375,7 +384,7 @@ fun HomeScreen(vm: ThermoViewModel) {
                 horizontalArrangement=Arrangement.spacedBy(8.dp)
             ) {
                 SmallGlass("Garten · Demo","17,9 °C","72 % RH",Good,Modifier.weight(1f))
-                SmallGlass("Außenluft · Demo","12,0 °C","86 % RH",Cyan,Modifier.weight(1f))
+                SmallGlass(if(outside==null) "Außenluft · Demo" else "Außenluft · Sensor",outside?.let { "${String.format(java.util.Locale.GERMAN,"%.1f",it.temperatureC)} °C" } ?: "12,0 °C",outside?.let { "${it.relativeHumidityPercent} % RH" } ?: "86 % RH",Cyan,Modifier.weight(1f))
                 SmallGlass("Luftqualität · Demo","AQI 28","Gut",Good,Modifier.weight(1f))
             }
             GlassCard(
@@ -387,7 +396,7 @@ fun HomeScreen(vm: ThermoViewModel) {
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Lüften nach Raum prüfen",color=Color.White,fontWeight=FontWeight.Bold)
-                        Text("Außenluft · Demo · 12,0 °C · 86 % RH",color=TextSoft,fontSize=10.sp)
+                        Text(outside?.let { "Außen · Sensor · ${it.temperatureC} °C · ${it.relativeHumidityPercent} % RH" } ?: "Außenluft · Demo · 12,0 °C · 86 % RH",color=TextSoft,fontSize=10.sp)
                     }
                     Icon(Icons.Filled.ChevronRight,null,tint=Color.White)
                 }
@@ -424,21 +433,25 @@ fun HomeScreen(vm: ThermoViewModel) {
 fun WeatherGlassCard(vm: ThermoViewModel, modifier: Modifier) {
     val condition = vm.weather
     val data = vm.weatherData.takeIf { vm.weatherTest == null }
+    val outside=liveOutdoor(vm)
+    val temperature=outside?.temperatureC ?: data?.temperature ?: 12f
+    val humidity=outside?.relativeHumidityPercent ?: data?.humidity ?: 86
     fun value(number: Float) = String.format(java.util.Locale.GERMAN, "%.1f", number)
     GlassCard(modifier.width(160.dp),alpha=.64f,padding=PaddingValues(14.dp)) {
         Row(verticalAlignment=Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text("AUSSENWETTER",color=TextSoft,fontSize=9.sp)
-                Text("${value(data?.temperature ?: 12f)}°C",color=Color.White,fontSize=30.sp)
+                Text("${value(temperature)}°C",color=Color.White,fontSize=30.sp)
                 Text(condition,color=Color.White,fontSize=15.sp,fontWeight=FontWeight.Bold)
             }
             WeatherConditionIcon(condition, Modifier.size(32.dp))
         }
         Text(vm.weatherSource,color=TextSoft,fontSize=9.sp)
+        if(outside!=null) Text("T/RH · Außensensor ${measurementTime(outside.measuredAtMillis)}",color=TextSoft,fontSize=9.sp)
         Spacer(Modifier.height(8.dp))
-        Text("Außenfeuchte    ${data?.humidity ?: 86} %",color=Color.White,fontSize=10.sp)
-        Text("Taupunkt        ${value(ClimateMath.dewPoint((data?.temperature ?: 12f).toDouble(), (data?.humidity ?: 86).toDouble())?.toFloat() ?: 9.7f)} °C",color=TextSoft,fontSize=10.sp)
-        Text("Abs. Feuchte    ${value(ClimateMath.absoluteHumidity((data?.temperature ?: 12f).toDouble(), (data?.humidity ?: 86).toDouble()).toFloat())} g/m³",color=TextSoft,fontSize=10.sp)
+        Text("Außenfeuchte    ${humidity} %",color=Color.White,fontSize=10.sp)
+        Text("Taupunkt        ${value(ClimateMath.dewPoint(temperature.toDouble(), humidity.toDouble())?.toFloat() ?: 9.7f)} °C",color=TextSoft,fontSize=10.sp)
+        Text("Abs. Feuchte    ${value(ClimateMath.absoluteHumidity(temperature.toDouble(), humidity.toDouble()).toFloat())} g/m³",color=TextSoft,fontSize=10.sp)
     }
 }
 
@@ -581,6 +594,7 @@ fun RoomGlassRow(baseRoom:Room,vm:ThermoViewModel) {
             }
             Icon(Icons.Filled.ChevronRight,null,tint=Cyan,modifier=Modifier.align(Alignment.CenterVertically).padding(10.dp))
         }
+        RoomDataSourceStatus(room,vm)
         RoomDehumidifierStatus(room,vm,Modifier.padding(horizontal=12.dp,vertical=6.dp))
     }
 }
@@ -612,6 +626,7 @@ fun RoomDetailScreen(vm:ThermoViewModel,baseRoom:Room) {
             }
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
+            RoomDataSourceStatus(room,vm)
             room.measuredAtMillis?.let {
                 Text("Letzte Messung: ${measurementTime(it)}",color=TextSoft,fontSize=10.sp)
                 Spacer(Modifier.height(8.dp))
@@ -724,8 +739,9 @@ fun DevicesScreen(vm:ThermoViewModel) {
     val context=LocalContext.current
     AppScaffold("Geräte","Tuya · Midea · Sensoren · Solix",4,null,vm) {
         Spacer(Modifier.height(8.dp))
+        TuyaSetupCard(vm)
         listOf(
-            Triple(Icons.Filled.Thermostat,"Tuya Raumklima","Sensoren und Fensterkontakte · vorbereitet"),
+            Triple(Icons.Filled.Thermostat,"Tuya Raumklima","Verbindung und Gerätediagnose im Tuya-Bereich oben"),
             Triple(Icons.Filled.WaterDrop,"Midea DF-20DEN7-WF","NetHome Plus · noch nicht verbunden"),
             Triple(Icons.Filled.Sensors,"Außenklima","Temperatur · RH · Taupunkt · absolute Feuchte"),
             Triple(Icons.Filled.BatteryChargingFull,"Anker Smartplug / SOLIX 4 Pro","Stromverbrauch · noch nicht verbunden")

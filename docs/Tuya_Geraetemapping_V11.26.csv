@@ -1,0 +1,117 @@
+Gerät,Raum,Device ID,Erwartetes Produkt,Product ID API,Category API,Funktion,DP Code,Datentyp,Einheit,Scale,Read/Write,API verifiziert
+T & H Sensor Aussen,outside,bf710ee9b6d22ac731mj0o,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Sensor Aussen,outside,bf710ee9b6d22ac731mj0o,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Sensor Aussen,outside,bf710ee9b6d22ac731mj0o,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Sensor Werkstatt,workshop,bf6b1a4c84535fba5cdvkm,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Sensor Werkstatt,workshop,bf6b1a4c84535fba5cdvkm,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Sensor Werkstatt,workshop,bf6b1a4c84535fba5cdvkm,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Sensor Wäsche,laundry,bf36bcf269d4f4482ccq26,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Sensor Wäsche,laundry,bf36bcf269d4f4482ccq26,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Sensor Wäsche,laundry,bf36bcf269d4f4482ccq26,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Hobbyraum,fitness,bf01bb78efe5d175c8sld6,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Hobbyraum,fitness,bf01bb78efe5d175c8sld6,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Hobbyraum,fitness,bf01bb78efe5d175c8sld6,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Kinderzimmer,child1,bf7b043fb8e82db44eaqy7,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Kinderzimmer,child1,bf7b043fb8e82db44eaqy7,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Kinderzimmer,child1,bf7b043fb8e82db44eaqy7,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Küche,kitchen,bfb8617e1a6de43139jfhj,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Küche,kitchen,bfb8617e1a6de43139jfhj,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Küche,kitchen,bfb8617e1a6de43139jfhj,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Büro,office,bf93223c0300e92d8e2t9a,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Büro,office,bf93223c0300e92d8e2t9a,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Büro,office,bf93223c0300e92d8e2t9a,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Badezimmer,bath,bf59edf22a96f82677ussn,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Badezimmer,bath,bf59edf22a96f82677ussn,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Badezimmer,bath,bf59edf22a96f82677ussn,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Schlafzimmer,bedroom,bf111baa9a4287f18dq0sl,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Schlafzimmer,bedroom,bf111baa9a4287f18dq0sl,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Schlafzimmer,bedroom,bf111baa9a4287f18dq0sl,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+T & H Wohnzimmer,living,bfe826289bece5c16am37u,001ZTHA1,,,climate,va_temperature,API prüfen,,,API prüfen,nein
+T & H Wohnzimmer,living,bfe826289bece5c16am37u,001ZTHA1,,,climate,va_humidity,API prüfen,,,API prüfen,nein
+T & H Wohnzimmer,living,bfe826289bece5c16am37u,001ZTHA1,,,climate,battery_percentage,API prüfen,,,API prüfen,nein
+Wohnzimmer Fenster rechts,living,bff0868b069298af1axdku,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Haustüre,entrance,bf358d8838a8e22d6fhsze,,,,door,API prüfen,API prüfen,,,API prüfen,nein
+Fenster WC,wc,bf56a80af7d465a53atulg,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Bühne Fenster,child2,bfcc9c19204bba00d7qkrr,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Kinderzimmer Fenster,child1,bf8979881fe47631a6pgts,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Abstellraum Fenster,pantry,bfd2e5e94dfd9f2bfaI85g,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Küchen Fenster rechts,kitchen,bf8689bf7cce5d2ff7p7ws,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Bad Fenster,bath,bf7d463184c9e82838wo4o,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Büro Fenster Haustüre,office,bf37908d868c548728lv0k,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Büro Fenster PC,office,bfd930a808c5e8c630flrs,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Schlafzimmer Fenster rechts,bedroom,bf0def40886811dc1d8zxi,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Schlafzimmer Fenster Bett,bedroom,bf477638466db9aadfnzvn,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Fenster 1 Wohnzimmer,living,bf0ccb523fb2bc3b8abazj,,,,window,API prüfen,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 1,child1,bfc946a53feab9aa100bry,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 1,child1,bfc946a53feab9aa100bry,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 1,child1,bfc946a53feab9aa100bry,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 1,child1,bfc946a53feab9aa100bry,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 1,child1,bfc946a53feab9aa100bry,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 2,child1,bfb10498a9c4e999a8gjlp,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 2,child1,bfb10498a9c4e999a8gjlp,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 2,child1,bfb10498a9c4e999a8gjlp,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 2,child1,bfb10498a9c4e999a8gjlp,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Kinderzimmer Heizung 2,child1,bfb10498a9c4e999a8gjlp,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 1,bedroom,bf469b4f4a4d95b0c0v4rl,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 1,bedroom,bf469b4f4a4d95b0c0v4rl,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 1,bedroom,bf469b4f4a4d95b0c0v4rl,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 1,bedroom,bf469b4f4a4d95b0c0v4rl,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 1,bedroom,bf469b4f4a4d95b0c0v4rl,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 2,bedroom,bf5a0f0fed7b70a6503mwd,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 2,bedroom,bf5a0f0fed7b70a6503mwd,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 2,bedroom,bf5a0f0fed7b70a6503mwd,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 2,bedroom,bf5a0f0fed7b70a6503mwd,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Schlafzimmer Heizung 2,bedroom,bf5a0f0fed7b70a6503mwd,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 1,living,bf5e01900e3ff042d7jpro,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 1,living,bf5e01900e3ff042d7jpro,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 1,living,bf5e01900e3ff042d7jpro,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 1,living,bf5e01900e3ff042d7jpro,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 1,living,bf5e01900e3ff042d7jpro,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 2,living,bf7bf1fe66e57d32adcww7,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 2,living,bf7bf1fe66e57d32adcww7,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 2,living,bf7bf1fe66e57d32adcww7,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 2,living,bf7bf1fe66e57d32adcww7,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Wohnzimmer Heizung 2,living,bf7bf1fe66e57d32adcww7,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Büro Heizung 1,office,bf5635f933b3f02745twqf,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Büro Heizung 1,office,bf5635f933b3f02745twqf,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Büro Heizung 1,office,bf5635f933b3f02745twqf,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Büro Heizung 1,office,bf5635f933b3f02745twqf,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Büro Heizung 1,office,bf5635f933b3f02745twqf,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Heizung Küche 1,kitchen,bf6aa447f8fc6561eachr5,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Heizung Küche 1,kitchen,bf6aa447f8fc6561eachr5,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Heizung Küche 1,kitchen,bf6aa447f8fc6561eachr5,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Heizung Küche 1,kitchen,bf6aa447f8fc6561eachr5,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Heizung Küche 1,kitchen,bf6aa447f8fc6561eachr5,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Heizung Küche 2,kitchen,bf550b29fc89ea26efmbop,HY18-NEW,,,heater,switch,API prüfen,,,API prüfen,nein
+Heizung Küche 2,kitchen,bf550b29fc89ea26efmbop,HY18-NEW,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Heizung Küche 2,kitchen,bf550b29fc89ea26efmbop,HY18-NEW,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Heizung Küche 2,kitchen,bf550b29fc89ea26efmbop,HY18-NEW,,,heater,work_state,API prüfen,,,API prüfen,nein
+Heizung Küche 2,kitchen,bf550b29fc89ea26efmbop,HY18-NEW,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+Hobby Keller 600W Heizung,fitness,bfa1a9a1039120901e43ka,Metal Panel Heater,,,heater,switch,API prüfen,,,API prüfen,nein
+Hobby Keller 600W Heizung,fitness,bfa1a9a1039120901e43ka,Metal Panel Heater,,,heater,temp_set,API prüfen,,,API prüfen,nein
+Hobby Keller 600W Heizung,fitness,bfa1a9a1039120901e43ka,Metal Panel Heater,,,heater,temp_current,API prüfen,,,API prüfen,nein
+Hobby Keller 600W Heizung,fitness,bfa1a9a1039120901e43ka,Metal Panel Heater,,,heater,work_state,API prüfen,,,API prüfen,nein
+Hobby Keller 600W Heizung,fitness,bfa1a9a1039120901e43ka,Metal Panel Heater,,,heater,Weitere DPs: API prüfen,API prüfen,,,API prüfen,nein
+CO Sensor Kinderzimmer,child1,bfa0b82890a9266a75wd0q,CO报警器,,,co,co_state/co_status,API prüfen,,,API prüfen,nein
+CO Sensor Kinderzimmer,child1,bfa0b82890a9266a75wd0q,CO报警器,,,co,co_value,API prüfen,,,API prüfen,nein
+CO Sensor Kinderzimmer,child1,bfa0b82890a9266a75wd0q,CO报警器,,,co,battery_percentage,API prüfen,,,API prüfen,nein
+CO Sensor Kinderzimmer,child1,bfa0b82890a9266a75wd0q,CO报警器,,,co,fault,API prüfen,,,API prüfen,nein
+CO Sensor Schlafzimmer,bedroom,bfae72d5fcffe88c0bysga,CO报警器,,,co,co_state/co_status,API prüfen,,,API prüfen,nein
+CO Sensor Schlafzimmer,bedroom,bfae72d5fcffe88c0bysga,CO报警器,,,co,co_value,API prüfen,,,API prüfen,nein
+CO Sensor Schlafzimmer,bedroom,bfae72d5fcffe88c0bysga,CO报警器,,,co,battery_percentage,API prüfen,,,API prüfen,nein
+CO Sensor Schlafzimmer,bedroom,bfae72d5fcffe88c0bysga,CO报警器,,,co,fault,API prüfen,,,API prüfen,nein
+CO Sensor Wohnzimmer,living,bfe2b4105bb66c47d38kfz,CO报警器,,,co,co_state/co_status,API prüfen,,,API prüfen,nein
+CO Sensor Wohnzimmer,living,bfe2b4105bb66c47d38kfz,CO报警器,,,co,co_value,API prüfen,,,API prüfen,nein
+CO Sensor Wohnzimmer,living,bfe2b4105bb66c47d38kfz,CO报警器,,,co,battery_percentage,API prüfen,,,API prüfen,nein
+CO Sensor Wohnzimmer,living,bfe2b4105bb66c47d38kfz,CO报警器,,,co,fault,API prüfen,,,API prüfen,nein
+Ventilator Keller,,bf4750a725e1289d00bxab,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+Repeater Flur,,bfe4dbc61bff08a7c3wxf8,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+großer Kühlschrank Steckdose,,bf8cdc58db32ce87a41ilg,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+PC Steckdose,,bf57a8b309b55fbca6qjzf,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+Heizung Bad,,bfc6471541c08dac96etjh,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+Intelligente Türklingel,,bf7a1efe3d4f26b881n8rf,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+intelligente Steckdosenleiste,,bf46241c604c4a42253lsb,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+ZigBee repeater 2,,bffcd7e0ad6c74b2dfh85p,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+ZigBee repeater,,bf45f496b53ed146b2l3h7,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+Smart Control Panel,,bf432d09970d96992ccqk5,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein
+Mini Multi-Mode Gateway,,bf27f83aaeb623e2cb4d2o,,,,diagnostic,Diagnose ohne Automatik,API prüfen,,,API prüfen,nein

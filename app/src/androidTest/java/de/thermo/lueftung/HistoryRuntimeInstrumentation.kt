@@ -5,10 +5,13 @@ import android.os.Bundle
 
 /** Dependency-free device test runner. Uses an isolated database, never user history. */
 class HistoryRuntimeInstrumentation:Instrumentation() {
-    override fun onCreate(arguments:Bundle?) { super.onCreate(arguments);start() }
+    private var tuyaOnly=false
+    override fun onCreate(arguments:Bundle?) { super.onCreate(arguments);tuyaOnly=arguments?.getString("tuya_only")=="true";start() }
     override fun onStart() {
         val result=Bundle()
         try {
+            TuyaDeviceChecks.run(targetContext)
+            if(tuyaOnly) { result.putString("result","Tuya JSON fixtures, offline policy and Keystore checks passed (no real devices)");finish(android.app.Activity.RESULT_OK,result);return }
             targetContext.deleteDatabase("validation-history.db")
             var db=HistoryDatabase(targetContext,"validation-history.db")
             val at=System.currentTimeMillis()-10000
@@ -73,7 +76,7 @@ class HistoryRuntimeInstrumentation:Instrumentation() {
             val events=ThermoRuntime.history.events(room,at-1000,System.currentTimeMillis())
             check(events.any { it.type.startsWith("HEATING") && it.end!=null })
             check(events.filter { it.type=="VENTILATION" }.all { it.end!=null })
-            java.io.File(targetContext.cacheDir,"Thermo_V11.25_Runtime_DEMO.xlsx").outputStream().use {
+            java.io.File(targetContext.cacheDir,"Thermo_V11.26_Runtime_DEMO.xlsx").outputStream().use {
                 ExcelHistoryExport.write(HistorySelection(room,"Bühne · Sensortest",at-1000,System.currentTimeMillis(),HistoryMetric.entries.toSet(),ThermoRuntime.history.samples(room,at-1000,System.currentTimeMillis()),events,true),it)
             }
             result.putString("stream","PASS: SQLite persistence, room/range isolation, event overlap/duration, monotonic deadline persistence, duplicate/late packets and multiple windows; sensor-triggered timer start/stop, door/heating events, ongoing notification and 60-second background alarm.\n")

@@ -28,16 +28,18 @@ fun RoomVentilationCard(room:Room,vm:ThermoViewModel) {
     val context=LocalContext.current
     var permission by remember { mutableStateOf(Build.VERSION.SDK_INT<33 || ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)==PackageManager.PERMISSION_GRANTED) }
     val request=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permission=it }
-        val weather=vm.weatherData?.takeIf { it.fresh() }
+        val outdoor by ThermoRuntime.outdoorClimate.collectAsState()
+    val outside=outdoor?.takeIf { TuyaPolicy.fresh(it.measuredAtMillis,System.currentTimeMillis()) }
+    val weather=vm.weatherData?.takeIf { it.fresh() }
     val wall=vm.wallTemperatures[room.id]?.takeIf { System.currentTimeMillis()-it.measuredAtMillis in 0..DehumidifierRecommendation.MAX_AGE_MILLIS }?.temperatureC
-    val plan=VentilationPlanner.plan(room.temp.toDouble(),room.humidity.toDouble(),weather?.temperature?.toDouble() ?: 12.0,weather?.humidity?.toDouble() ?: 86.0,room.floor=="Keller",wall)
+    val plan=VentilationPlanner.plan(room.temp.toDouble(),room.humidity.toDouble(),outside?.temperatureC?.toDouble() ?: weather?.temperature?.toDouble() ?: 12.0,outside?.relativeHumidityPercent?.toDouble() ?: weather?.humidity?.toDouble() ?: 86.0,room.floor=="Keller",wall)
     var minutes by remember(room.id) { mutableIntStateOf(plan.minutes ?: 5) }
     val fresh=room.measuredAtMillis?.let { System.currentTimeMillis()-it in 0..DehumidifierRecommendation.MAX_AGE_MILLIS } ?: true
     var alerts by remember { mutableStateOf(ClimateNotifications.enabled(context)) }
     val timer=vm.timerSnapshot[room.id]
     GlassCard(Modifier.fillMaxWidth(),alpha=.62f) {
         Text("Lüftungsberatung & Timer",color=Color.White,fontWeight=FontWeight.Bold)
-        Text(if(room.isDemo || weather==null) "Vorschau · Raum-/Außenwerte enthalten Demo" else "Raumsensor + Open-Meteo-Modellwetter",color=Color.White.copy(alpha=.72f),fontSize=10.sp)
+        Text(if(room.isDemo || (weather==null && outside==null)) "Vorschau · Raum-/Außenwerte enthalten Demo" else if(outside!=null) "Raumsensor + echter Tuya-Außensensor" else "Raumsensor + Open-Meteo-Modellwetter",color=Color.White.copy(alpha=.72f),fontSize=10.sp)
         Text(if(fresh) plan.explanation else "Aktuelle Raummessung fehlt: keine automatische Lüftungsempfehlung.",color=Color.White,fontSize=12.sp)
         if(timer!=null) {
             val remaining=timer.remaining(vm.timerNow,android.os.SystemClock.elapsedRealtime(),ThermoRuntime.bootCount())
@@ -63,7 +65,7 @@ fun RoomVentilationCard(room:Room,vm:ThermoViewModel) {
         Row { Switch(checked=alerts,onCheckedChange={alerts=it;context.getSharedPreferences("alerts",Context.MODE_PRIVATE).edit().putBoolean("enabled",it).apply() });Text("Klimahinweise",color=Color.White,modifier=Modifier.padding(12.dp)) }
         Text("Hinweise ab 70 % Feuchte, günstige Trocknung ab 60 %. Kältewarnung: 17 °C, Keller 14 °C. Nur frische echte Werte; regelmäßige Prüfung ca. alle 15 Min.",color=Color.White.copy(alpha=.72f),fontSize=10.sp)
         TextButton(onClick={if(permission) ClimateNotifications.test(context,room) else request.launch(Manifest.permission.POST_NOTIFICATIONS)}) { Text("Testbenachrichtigung · Demo") }
-        Text("Fenster-/Türsensoren noch nicht verbunden. Automatische Starts erst über den Geräteadapter; Tests unten sind Demo.",color=Color.White.copy(alpha=.72f),fontSize=10.sp)
+        Text("Tuya-Kontakte nur nach Live-Freigabe. Abfrage bei geöffneter App ca. alle 5 Min.; keine Echtzeitüberwachung im Hintergrund. Tests unten sind Demo.",color=Color.White.copy(alpha=.72f),fontSize=10.sp)
     }
 }
 

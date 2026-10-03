@@ -1,0 +1,4 @@
+<data-extraction-rules>
+    <cloud-backup><exclude domain="sharedpref" path="tuya_bridge.xml" /></cloud-backup>
+    <device-transfer><exclude domain="sharedpref" path="tuya_bridge.xml" /></device-transfer>
+</data-extraction-rules>

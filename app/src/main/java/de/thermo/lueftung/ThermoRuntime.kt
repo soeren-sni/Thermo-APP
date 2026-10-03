@@ -24,6 +24,9 @@ object ThermoRuntime {
     private val sensorLock=Mutex()
     val historyRevision=MutableStateFlow(0)
     val timers=MutableStateFlow<Map<String,ActiveVentilationTimer>>(emptyMap())
+    val outdoorClimate=MutableStateFlow<RoomClimateReading?>(null)
+    lateinit var tuya:TuyaRepository
+        private set
     val climate=RoomClimateStore { room,reading ->
         if(::history.isInitialized) io.launch {
             history.record(room,reading);historyRevision.value++
@@ -35,7 +38,7 @@ object ThermoRuntime {
     }
     @Synchronized fun initialize(app:Context) {
         if(::history.isInitialized) return
-        context=app.applicationContext;history=HistoryDatabase(context)
+        context=app.applicationContext;history=HistoryDatabase(context);tuya=TuyaRepository(context)
         ClimateNotificationJob.schedule(context)
         io.launch { allThermoRooms().forEach { room -> history.latest(room.id)?.let { s ->
             climate.accept(room.id,RoomClimateReading(s.temperature.toFloat(),s.humidity.toInt(),s.dewPoint.toFloat(),
@@ -53,13 +56,14 @@ object ThermoRuntime {
     }
     fun acknowledgeAlarm() { ContextCompat.startForegroundService(context,Intent(context,VentilationTimerService::class.java).setAction("ACK")) }
     /** Entry point for a trusted in-app device adapter; no externally exported receiver. */
-    fun sensorEvent(room:String,sensor:String,type:String,open:Boolean,at:Long=System.currentTimeMillis(),demo:Boolean=false) {
+    fun sensorEvent(room:String,sensor:String,type:String,open:Boolean,at:Long=System.currentTimeMillis(),demo:Boolean=false,baseline:Boolean=false) {
         require(allThermoRooms().any { it.id==room });require(type in setOf("WINDOW","DOOR","HEATING"));require(sensor.isNotBlank())
         require(at>0 && at<=System.currentTimeMillis()+60000)
         io.launch { sensorLock.withLock {
             val source=if(demo) "Demo" else "Sensor"
             val previousWindows=history.openWindows(room)
             if(!history.contact(sensor,room,type,open,at,source)) return@withLock
+            if(baseline) { historyRevision.value++;return@withLock }
             val now=System.currentTimeMillis()
             val reading=climate.readings.value[room]?.takeIf { now-it.measuredAtMillis in 0..DehumidifierRecommendation.MAX_AGE_MILLIS }
             val eventType=if(type=="HEATING") "HEATING_$sensor" else "${type}_$sensor"
@@ -69,9 +73,10 @@ object ThermoRuntime {
             if(type=="WINDOW") {
                 if(open && previousWindows==0) {
                     val base=allThermoRooms().first { it.id==room }
+                    val outdoor=outdoorClimate.value?.takeIf { !it.isDemo && now-it.measuredAtMillis in 0..DehumidifierRecommendation.MAX_AGE_MILLIS }
                     val outside=weather?.takeIf { it.fresh() }
                     val wall=walls[room]?.takeIf { now-it.measuredAtMillis in 0..DehumidifierRecommendation.MAX_AGE_MILLIS }
-                    val plan=if(reading!=null && outside!=null && !reading.isDemo) VentilationPlanner.plan(reading.temperatureC.toDouble(),reading.relativeHumidityPercent.toDouble(),outside.temperature.toDouble(),outside.humidity.toDouble(),base.floor=="Keller",wall?.temperatureC,history.openDoors(room)>0) else null
+                    val plan=if(reading!=null && (outdoor!=null || outside!=null) && !reading.isDemo) VentilationPlanner.plan(reading.temperatureC.toDouble(),reading.relativeHumidityPercent.toDouble(),outdoor?.temperatureC?.toDouble() ?: outside!!.temperature.toDouble(),outdoor?.relativeHumidityPercent?.toDouble() ?: outside!!.humidity.toDouble(),base.floor=="Keller",wall?.temperatureC,history.openDoors(room)>0) else null
                     // Without verified drying potential, issue a short closing reminder.
                     // This is not a claim that ventilation is advisable.
                     startTimer(room,plan?.minutes ?: 2,source+if(plan?.minutes==null) " · Schließerinnerung, keine Lüftungsfreigabe" else "",at,sensor=true)

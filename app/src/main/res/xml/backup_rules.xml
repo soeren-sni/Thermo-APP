@@ -1,0 +1,3 @@
+<full-backup-content>
+    <exclude domain="sharedpref" path="tuya_bridge.xml" />
+</full-backup-content>

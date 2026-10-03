@@ -41,6 +41,14 @@ class RoomClimateStoreTest {
         assertEquals(listOf(2000L,3000L),times)
     }
 
+    @Test fun verifiedSourceReplacesNewerDemoPreviewWithoutLosingMeasurementTime() {
+        val store=RoomClimateStore()
+        store.accept("office",reading(3000).copy(isDemo=true))
+        store.accept("office",reading(2000).copy(isDemo=false))
+        assertFalse(store.readings.value.getValue("office").isDemo)
+        assertEquals(2000L,store.readings.value.getValue("office").measuredAtMillis)
+    }
+
     @Test fun sourceSensorSetIsCopiedBeforePublication() {
         val store = RoomClimateStore()
         val ids = mutableSetOf("sensor-a")

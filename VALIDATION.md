@@ -1,4 +1,6 @@
-Aktueller Prüfbericht: [V11.25 – Historie, Excel, Timer und Raumampel](docs/Pruefbericht_V11.25_Historie-Excel-Timer-Raumampel.md).
+Aktueller Prüfbericht: [V11.26 – Blauer Himmel, weiße ziehende Wolken](docs/Pruefbericht_V11.26_Tuya-Lokal-Blauer-Himmel.md).
+
+Vorheriger Prüfbericht: [V11.25 – Historie, Excel, Timer und Raumampel](docs/Pruefbericht_V11.25_Historie-Excel-Timer-Raumampel.md).
 
 Vorheriger Prüfbericht: [V11.23 – Kleine ziehende Wolken](docs/Pruefbericht_V11.23_Kleine-ziehende-Wolken.md).
 

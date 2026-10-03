@@ -1,0 +1,8 @@
+{
+  "THERMO_PROVIDER": "homeassistant",
+  "HA_URL": "http://127.0.0.1:8123",
+  "HA_READ_TOKEN": "",
+  "HA_MAPPING_FILE": "",
+  "THERMO_BRIDGE_TOKEN": "",
+  "THERMO_BRIDGE_PORT": "8787"
+}

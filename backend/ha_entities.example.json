@@ -1,0 +1,24 @@
+[
+  {
+    "id": "bf710ee9b6d22ac731mj0o",
+    "name": "Außenklima – lokale Zuordnung noch offen",
+    "room": "outside",
+    "role": "climate",
+    "localConfirmed": false,
+    "entities": {
+      "va_temperature": "sensor.HIER_ECHTE_AUSSEN_TEMPERATUR_ENTITY_EINTRAGEN",
+      "va_humidity": "sensor.HIER_ECHTE_AUSSEN_FEUCHTE_ENTITY_EINTRAGEN"
+    }
+  },
+  {
+    "id": "bf6b1a4c84535fba5cdvkm",
+    "name": "Werkstatt – lokale Zuordnung noch offen",
+    "room": "workshop",
+    "role": "climate",
+    "localConfirmed": false,
+    "entities": {
+      "va_temperature": "sensor.HIER_ECHTE_WERKSTATT_TEMPERATUR_ENTITY_EINTRAGEN",
+      "va_humidity": "sensor.HIER_ECHTE_WERKSTATT_FEUCHTE_ENTITY_EINTRAGEN"
+    }
+  }
+]

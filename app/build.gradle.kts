@@ -21,8 +21,8 @@ android {
         applicationId = "de.thermo.lueftung"
         minSdk = 26
         targetSdk = 35
-        versionCode = 31
-        versionName = "11.25"
+        versionCode = 32
+        versionName = "11.26"
         testInstrumentationRunner = "de.thermo.lueftung.HistoryRuntimeInstrumentation"
     }
 }
